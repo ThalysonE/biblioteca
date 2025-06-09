@@ -50,7 +50,6 @@ class _LibraryDashboardState extends State<LibraryDashboard> {
       final dataFormatada = DateTime(data.year, data.month, data.day);
       return (dataFormatada == dataHojeFormatada) && (item.status == 3 ||item.status == 2);
     }).length;
-    print('Finalizou');
     setState(() {
       loansToday = qtdEmprestimosHoje;
       returnsToday = qtdEmprestimsDevolvidosHoje;

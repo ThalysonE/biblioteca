@@ -12,13 +12,8 @@ class EmprestimoProvider with ChangeNotifier {
 
   //Para buscar todos os emprestimos para o DashBoard
   Future<List<EmprestimosModel>> fetchTodosEmprestimos() async {
-    try {
      final emprestimos = await emprestimoService.fetchTodosEmprestimos(idDaSessao, usuarioLogado);
      return emprestimos;
-    } catch (e) {
-      print("Erro ao buscar emprestimos: $e");
-      return [];
-    } 
   }
   Future<List<EmprestimosModel>> fetchEmprestimoUsuario(int idAluno) async {
     try {
