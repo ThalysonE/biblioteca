@@ -2,7 +2,6 @@ import 'package:biblioteca/data/models/usuario_model.dart';
 import 'package:biblioteca/screens/library_dashboard.dart'; // Adicione esta linha
 import 'package:biblioteca/data/models/autor_model.dart';
 import 'package:biblioteca/data/models/livro_model.dart';
-import 'package:biblioteca/data/models/usuario_model.dart';
 import 'package:biblioteca/data/providers/auth_provider.dart';
 import 'package:biblioteca/screens/pesquisar_livro.dart';
 import 'package:biblioteca/screens/tela_devolucao.dart';

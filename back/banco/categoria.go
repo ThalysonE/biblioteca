@@ -22,7 +22,7 @@ const (
 func PesquisarCategoria(busca string) []modelos.Categoria {
 	conexao := PegarConexao()
 	busca = "%" + strings.ToLower(busca) + "%"
-	textoQuery := "SELECT id_categoria, descricao FROM categoria WHERE trim(lower(id_categoria::varchar)) LIKE $1 OR trim(lower(descricao)) LIKE $1"
+	textoQuery := "SELECT id_categoria, descricao, ativo FROM categoria WHERE trim(lower(id_categoria::varchar)) LIKE $1 OR trim(lower(descricao)) LIKE $1"
 
 	linhas, erro := conexao.Query(context.Background(), textoQuery, busca)
 	if erro != nil {
@@ -30,7 +30,7 @@ func PesquisarCategoria(busca string) []modelos.Categoria {
 	}
 	var categoriaTemporaria modelos.Categoria
 	categoriasEncontradas := make([]modelos.Categoria, 0)
-	_, erro = pgx.ForEachRow(linhas, []any{&categoriaTemporaria.IdDaCategoria, &categoriaTemporaria.Descricao}, func() error {
+	_, erro = pgx.ForEachRow(linhas, []any{&categoriaTemporaria.IdDaCategoria, &categoriaTemporaria.Descricao, &categoriaTemporaria.Ativo}, func() error {
 		categoriasEncontradas = append(categoriasEncontradas, categoriaTemporaria)
 		return nil
 	})
@@ -42,7 +42,7 @@ func PesquisarCategoria(busca string) []modelos.Categoria {
 
 func PegarTodasCategorias() []modelos.Categoria {
 	conexao := PegarConexao()
-	textoQuery := "SELECT id_categoria, descricao FROM categoria"
+	textoQuery := "SELECT id_categoria, descricao, ativo FROM categoria"
 	linhas, erro := conexao.Query(context.Background(), textoQuery)
 	if erro != nil {
 		return []modelos.Categoria{}
@@ -50,7 +50,7 @@ func PegarTodasCategorias() []modelos.Categoria {
 
 	var categoriaTemporaria modelos.Categoria
 	categoriasEncontradas := make([]modelos.Categoria, 0)
-	_, erro = pgx.ForEachRow(linhas, []any{&categoriaTemporaria.IdDaCategoria, &categoriaTemporaria.Descricao}, func() error {
+	_, erro = pgx.ForEachRow(linhas, []any{&categoriaTemporaria.IdDaCategoria, &categoriaTemporaria.Descricao, &categoriaTemporaria.Ativo}, func() error {
 		categoriasEncontradas = append(categoriasEncontradas, categoriaTemporaria)
 		return nil
 	})
@@ -76,11 +76,12 @@ func CriarCategoria(novaCategoria modelos.Categoria) ErroBancoCategoria {
 func PegarCategoriaPeloId(id uint64) (modelos.Categoria, bool) {
 	conexao := PegarConexao()
 	var categoria modelos.Categoria
-	textoQuery := "SELECT id_categoria, descricao FROM categoria WHERE id_categoria = $1"
+	textoQuery := "SELECT id_categoria, descricao, ativo FROM categoria WHERE id_categoria = $1"
 
 	if erro := conexao.QueryRow(context.Background(), textoQuery, id).Scan(
 		&categoria.IdDaCategoria,
 		&categoria.Descricao,
+		&categoria.Ativo,
 	); erro == nil {
 		return categoria, true
 	} else {
@@ -106,7 +107,7 @@ func ExcluirCategoria(IdDaCategoria uint64) ErroBancoCategoria {
 
 	if _, erroQuery := conexao.Exec(
 		context.Background(),
-		"DELETE FROM categoria WHERE id_categoria = $1", IdDaCategoria,
+		"update categoria set ativo = false WHERE id_categoria = $1", IdDaCategoria,
 	); erroQuery != nil {
 		return ErroCategoriaExecutarExclusao
 	}

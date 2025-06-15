@@ -30,7 +30,7 @@ class CategoriaProvider extends ChangeNotifier {
           await _categoriaService.fetchCategorias(idDaSessao, usuarioLogado);
 
       if (apiResponse.responseCode == 200) {
-        _categorias = apiResponse.body;
+        _categorias = apiResponse.body.where((c)=> c.ativo == true).toList();
       } else {
         _error = apiResponse.body;
       }
@@ -43,7 +43,7 @@ class CategoriaProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> addCategoria(String descricao) async {
+  Future<Categoria?> addCategoria(String descricao) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -56,6 +56,8 @@ class CategoriaProvider extends ChangeNotifier {
         _error = apiResponse.body;
       } else {
         _categorias.add(apiResponse.body);
+
+        return apiResponse.body as Categoria;
       }
     } catch (e) {
       _error = "Provider: Erro ao inserir nova Categoria:\n$e";
@@ -66,6 +68,7 @@ class CategoriaProvider extends ChangeNotifier {
   }
 
   Future<void> deleteCatgoria(Categoria categoria) async {
+    print("${categoria.idDaCategoria} - ${categoria.descricao}");
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -87,19 +90,18 @@ class CategoriaProvider extends ChangeNotifier {
     }
   }
 
-
   Future<void> editCatgoria(Categoria categoria) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final apiResponse = await _categoriaService.alterCategoria(idDaSessao, usuarioLogado, categoria);
+      final apiResponse = await _categoriaService.alterCategoria(
+          idDaSessao, usuarioLogado, categoria);
 
       if (apiResponse.responseCode != 200) {
         _error = apiResponse.body;
       }
-        
     } catch (e) {
       _error = "Erro ao alterar a Categoria ${categoria.descricao}:\n$e";
     } finally {

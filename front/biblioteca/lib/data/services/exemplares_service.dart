@@ -54,7 +54,7 @@ class ExemplarService {
       "IdDoExemplarLivro": exemplar.id,
       "IdDoLivro": exemplar.idLivro,
       "Estado": exemplar.estado,
-      "Status": exemplar.status,
+      "Status": 1, // 0 - emprestado 1 - disponivel 2 - indisponivel NOTA: colocar isso num enum
       "Ativo": exemplar.ativo
     };
 

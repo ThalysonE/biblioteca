@@ -36,7 +36,7 @@ class UsuarioService {
       "LoginDoUsuarioRequerente": loginDoUsuarioRequerente,
       "TextoDeBusca": textoDeBusca
     };
-
+    print("Text: '${textoDeBusca}'");
     final response = await _api.requisicao(
       apiRoute,
       'GET',

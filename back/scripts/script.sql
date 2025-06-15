@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS livro_autor(
 CREATE TABLE IF NOT EXISTS categoria (
 	id_categoria SERIAL NOT NULL,
 	descricao VARCHAR(255) NOT NULL UNIQUE,
+	ativo BOOLEAN default true,
 	data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	data_atualizacao TIMESTAMP,
 	PRIMARY KEY(id_categoria)

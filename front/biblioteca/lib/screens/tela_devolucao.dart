@@ -198,7 +198,7 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
     final copia = List.from(emprestimosRenov);
     for(EmprestimosModel item in copia){
       print('Item: ${item.IdDoEmprestimo}');
-      await Provider.of<EmprestimoProvider>(context, listen: false).Devolver(item.IdDoEmprestimo);
+      await Provider.of<EmprestimoProvider>(context, listen: false).devolver(item.IdDoEmprestimo);
     }
     
   }

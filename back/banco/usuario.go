@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"strings"
 
 	pgx "github.com/jackc/pgx/v5"
 )
@@ -156,8 +157,8 @@ func ExcluirUsuario(idDoUsuario int) ErroBancoUsuario {
 
 func PesquisarUsuario(busca string) []modelos.Usuario {
 	conexao := PegarConexao()
-	busca = "%" + busca + "%" // isso está sujeitio a sql injection por favor olhar depois
-	textoQuery := "select id_usuario, login, cpf, nome, email, telefone,  permissoes, to_char(data_nascimento, 'yyyy-mm-dd'), ativo, turma from usuario where login like $1 or nome like $1 or email like $1"
+	busca = "%" + strings.ToLower(busca) + "%" // isso está sujeitio a sql injection por favor olhar depois
+	textoQuery := "select id_usuario, login, cpf, nome, email, telefone,  permissoes, to_char(data_nascimento, 'yyyy-mm-dd'), ativo, turma from usuario where login like $1 or lower(nome) like $1 or lower(email) like $1"
 	linhas, erro := conexao.Query(context.Background(), textoQuery, busca)
 	if erro != nil {
 		return []modelos.Usuario{}

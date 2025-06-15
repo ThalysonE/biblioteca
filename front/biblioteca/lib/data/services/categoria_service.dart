@@ -13,19 +13,19 @@ class CategoriaService {
     List<Categoria> categorias = [];
 
     final Map<String, dynamic> body = {
-      "IdDaSessao": idDaSessao, 
+      "IdDaSessao": idDaSessao,
       "LoginDoUsuarioRequerente": loginDoUsuarioRequerente,
       "TextoDeBusca": "_"
     };
 
     final response = await _api.requisicao(apiRoute, 'GET', body);
 
+    print(response.data);
     final json = jsonDecode(response.data);
-    
 
     if (response.statusCode! >= 200 && response.statusCode! < 300) {
-      categorias = List<Categoria>.from(json["CategoriasAtingidas"]
-          .map((x) => Categoria.fromJson(x)));
+      categorias = List<Categoria>.from(
+          json["CategoriasAtingidas"].map((x) => Categoria.fromJson(x)));
     }
 
     return ApiResponse(
@@ -34,11 +34,7 @@ class CategoriaService {
   }
 
   Future<ApiResponse> addCategoria(
-      num idDaSessao, 
-      String loginDoUsuarioRequerente,
-      String descricao
-    ) async {
-
+      num idDaSessao, String loginDoUsuarioRequerente, String descricao) async {
     final Map<String, dynamic> body = {
       "IdDaSessao": idDaSessao,
       "LoginDoUsuarioRequerente": loginDoUsuarioRequerente,
@@ -49,26 +45,19 @@ class CategoriaService {
 
     late final Categoria categoria;
 
-    if(response.statusCode == 200){
-
-      final json = jsonDecode(response.data)["CategoriasAtingidas"];
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.data)["CategoriasAtingidas"][0];
 
       categoria = Categoria.fromJson(json);
-
     }
 
     return ApiResponse(
         responseCode: response.statusCode!,
-        body: response.statusCode == 200 ? categoria : response.data
-      );
+        body: response.statusCode == 200 ? categoria : response.data);
   }
 
-  Future<ApiResponse> alterCategoria(
-      num idDaSessao, 
-      String loginDoUsuarioRequerente,
-      Categoria categoria
-    ) async {
-
+  Future<ApiResponse> alterCategoria(num idDaSessao,
+      String loginDoUsuarioRequerente, Categoria categoria) async {
     final Map<String, dynamic> body = {
       "IdDaSessao": idDaSessao,
       "LoginDoUsuarioRequerente": loginDoUsuarioRequerente,
@@ -78,19 +67,11 @@ class CategoriaService {
 
     final response = await _api.requisicao(apiRoute, 'PUT', body);
 
-
-
-    return ApiResponse(
-        responseCode: response.statusCode!,
-        body: response.data);
+    return ApiResponse(responseCode: response.statusCode!, body: response.data);
   }
 
-  Future<ApiResponse> deleteCategoria(
-      num idDaSessao, 
-      String loginDoUsuarioRequerente,
-      num idDaCategoria
-    ) async {
-
+  Future<ApiResponse> deleteCategoria(num idDaSessao,
+      String loginDoUsuarioRequerente, num idDaCategoria) async {
     final Map<String, dynamic> body = {
       "IdDaSessao": idDaSessao,
       "LoginDoUsuarioRequerente": loginDoUsuarioRequerente,
@@ -99,9 +80,6 @@ class CategoriaService {
 
     final response = await _api.requisicao(apiRoute, 'DELETE', body);
 
-    return ApiResponse(
-        responseCode: response.statusCode!,
-        body: response.data);
-        
+    return ApiResponse(responseCode: response.statusCode!, body: response.data);
   }
 }

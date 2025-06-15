@@ -58,6 +58,14 @@ class _CategoriesTablePageState extends State<CategoriesTablePage> {
     }
   }
 
+  Future<void> salvarCategoria(CategoriaProvider categoriaProvider) async {
+    Categoria? cat =
+        await categoriaProvider.addCategoria(_descriptionController.text);
+
+    setState(() {
+    });
+  }
+
   Material getPage(CategoriaProvider provider, List<Categoria> categories) {
     int totalPages = (categories.length / rowsPerPage).ceil();
 
@@ -485,11 +493,13 @@ class _CategoriesTablePageState extends State<CategoriesTablePage> {
               });
               Navigator.of(context).pop();
             } else {
-              categoriaProvider.addCategoria(_descriptionController.text);
-              setState(() {
-                categorias.add(Categoria(
-                    idDaCategoria: 1, descricao: _descriptionController.text));
-              });
+              salvarCategoria(categoriaProvider);
+              // categoriaProvider.addCategoria(_descriptionController.text);
+
+              // setState(() {
+              //   categorias.add(Categoria(
+              //       idDaCategoria: 1, descricao: _descriptionController.text));
+              // });
               Navigator.of(context).pop();
             }
           },

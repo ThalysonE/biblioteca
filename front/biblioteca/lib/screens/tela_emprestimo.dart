@@ -448,7 +448,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
   }
 
   void carregarEmprestimosUsuario(int idUsuario) async{
-    emprestimos = await Provider.of<EmprestimoProvider>(context, listen:  false).fetchEmprestimoUsuario(idUsuario);
+    emprestimos = await Provider.of<EmprestimoProvider>(context, listen:  false).fetchEmprestimoEmAndamentoUsuarios(idUsuario);
     setState(() {
     });
   }

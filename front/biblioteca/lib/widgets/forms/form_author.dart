@@ -1,13 +1,15 @@
 import 'package:biblioteca/data/models/autor_model.dart';
+import 'package:biblioteca/data/models/paises_model.dart';
 import 'package:biblioteca/data/models/sexo_model.dart';
 import 'package:biblioteca/data/providers/autor_provider.dart';
+import 'package:biblioteca/data/providers/paises_provider.dart';
 import 'package:biblioteca/utils/routes.dart';
+import 'package:biblioteca/widgets/forms/campo_obrigatorio.dart';
 import 'package:biblioteca/widgets/navegacao/bread_crumb.dart';
 import 'package:flutter/material.dart';
-import 'package:biblioteca/widgets/forms/campo_obrigatorio.dart';
 import 'package:provider/provider.dart';
 
-const List<String> paises = <String>['Brasil', 'Estados Unidos', 'Reino Unido'];
+// const List<String> paises = <String>['Brasil', 'Estados Unidos', 'Reino Unido'];
 
 class FormAutor extends StatefulWidget {
   const FormAutor({super.key, this.autor});
@@ -30,6 +32,19 @@ class _FormAutorState extends State<FormAutor> {
       TextEditingController();
   final TextEditingController _sexoController = TextEditingController();
 
+  List<Pais> _paises = [];
+
+  Future<void> loadPaises() async {
+    PaisesProvider paisesProvider =
+        Provider.of<PaisesProvider>(context, listen: false);
+
+    await paisesProvider.loadPaises();
+
+    setState(() {
+      _paises = paisesProvider.paises;
+    });
+  }
+
   void btnSalvar(context) async {
     AutorProvider provider = Provider.of<AutorProvider>(context, listen: false);
     final Autor newAutor;
@@ -40,7 +55,8 @@ class _FormAutorState extends State<FormAutor> {
 
       newAutor.nome = _nomeController.text;
       newAutor.anoNascimento = int.tryParse(_anoNascimentoController.text);
-      newAutor.nacionalidade = _nacionalidadeController.text;
+      newAutor.nacionalidadeCodigo =
+          int.tryParse(_nacionalidadeController.text);
       newAutor.sexoCodigo = _sexoController.text;
 
       await provider.editAutor(newAutor);
@@ -56,11 +72,10 @@ class _FormAutorState extends State<FormAutor> {
           anoNascimento: int.tryParse(_anoNascimentoController.text));
 
       await provider.addAutor(newAutor);
-      
+
       mensagem = provider.hasErrors
           ? provider.error
           : "Cadastro realizado com sucesso";
-
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -69,7 +84,7 @@ class _FormAutorState extends State<FormAutor> {
           backgroundColor: provider.hasErrors ? Colors.red : Colors.green),
     );
 
-    if(!provider.hasErrors){
+    if (!provider.hasErrors) {
       Navigator.pushNamedAndRemoveUntil(
           context, AppRoutes.autores, ModalRoute.withName(AppRoutes.home));
     }
@@ -77,13 +92,21 @@ class _FormAutorState extends State<FormAutor> {
 
   @override
   void initState() {
+    loadPaises();
+
     if (isModoEdicao()) {
       _nomeController.text = widget.autor!.nome;
+
       _anoNascimentoController.text = widget.autor!.anoNascimento != null
           ? widget.autor!.anoNascimento.toString()
           : '';
-      _nacionalidadeController.text = widget.autor!.nacionalidade;
-      _sexoController.text = widget.autor!.sexoCodigo!;
+
+      _nacionalidadeController.text = widget.autor!.nacionalidadeCodigo != null
+          ? widget.autor!.nacionalidadeCodigo.toString()
+          : '';
+
+      _sexoController.text =
+          widget.autor!.sexoCodigo != null ? widget.autor!.sexoCodigo! : '';
     }
 
     super.initState();
@@ -147,8 +170,8 @@ class _FormAutorState extends State<FormAutor> {
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value != null &&
-                              value.isNotEmpty &&
-                              int.tryParse(value) == null || int.parse(value!) > DateTime.now().year) {
+                                  value.isNotEmpty &&
+                              int.parse(value) > DateTime.now().year) {
                             return "Insira um ano válido";
                           }
                           return null;
@@ -165,10 +188,10 @@ class _FormAutorState extends State<FormAutor> {
                         value: _nacionalidadeController.text.isEmpty
                             ? null
                             : _nacionalidadeController.text,
-                        items: paises.map((String pais) {
+                        items: _paises.map((Pais pais) {
                           return DropdownMenuItem<String>(
-                            value: pais,
-                            child: Text(pais),
+                            value: pais.idDoPais.toString(),
+                            child: Text(pais.nome),
                           );
                         }).toList(),
                         onChanged: (String? newValue) {

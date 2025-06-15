@@ -30,7 +30,7 @@ class AutorService {
   //Criar novo Autor
   Future<ApiResponse> addAutor(Autor autor) async {
     final Map<String, dynamic> body = autor.toJson();
-
+    print(body);
     final response = await _api.requisicao(
       apiRoute,
       'POST',

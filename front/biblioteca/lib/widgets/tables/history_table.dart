@@ -52,7 +52,7 @@ class HistoryTablePageState extends State<HistoryTablePage> {
     try {
       List<EmprestimosModel> fetchEmprestimos =
           await Provider.of<EmprestimoProvider>(context, listen: false)
-              .fetchEmprestimoUsuario(idUsuario);
+              .fetchEmprestimosUsuario(idUsuario);
 
       setState(() {
         emprestimos = fetchEmprestimos;
@@ -160,7 +160,7 @@ class HistoryTablePageState extends State<HistoryTablePage> {
           children: [
             Padding(
                 padding: EdgeInsets.all(8.0),
-                child: Text('ID Exemplar',
+                child: Text('Tombamento',
                     textAlign: TextAlign.left,
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
@@ -264,7 +264,7 @@ class HistoryTablePageState extends State<HistoryTablePage> {
 
   Widget _buildStatusCell(int status) {
     return Align(
-      alignment: Alignment.center,
+      alignment: Alignment.centerLeft,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
@@ -372,13 +372,13 @@ class HistoryTablePageState extends State<HistoryTablePage> {
   Color _getStatusColor(int status) {
     switch (status) {
       case 1:
-        return const Color(0xFF1976D2); 
+        return const Color(0xFF1976D2);
       case 2:
-        return const Color(0xFFED6C02); 
+        return const Color(0xFFED6C02);
       case 3:
-        return const Color(0xFF2E7D32); 
+        return const Color(0xFF2E7D32);
       default:
-        return const Color(0xFF9E9E9E); 
+        return const Color(0xFF9E9E9E);
     }
   }
 

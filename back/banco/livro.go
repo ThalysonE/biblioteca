@@ -5,6 +5,7 @@ import (
 	"biblioteca/modelos"
 	"context"
 	"fmt"
+	"strings"
 )
 
 type ErroBancoLivro int
@@ -107,8 +108,15 @@ func CriarLivro(novoLivro modelos.Livro, nomeAutores []string, nomeCategorias []
 
 func PesquisarLivro(busca string) []modelos.LivroResposta {
 	conexao := PegarConexao()
-	busca = "%" + busca + "%"
-	textoQuery := "select id_livro, isbn, titulo, to_char(ano_publicacao, 'yyyy-mm-dd'), editora, pais from livro where isbn like $1 or titulo like $1 or ano_publicacao::varchar like $1 or editora like $1 or pais::varchar like $1"
+	busca = "%" + strings.ToLower(busca) + "%"
+	textoQuery := `
+	select id_livro, isbn, titulo, to_char(ano_publicacao, 'yyyy-mm-dd'), editora, pais from livro l
+	where isbn like $1 or lower(titulo) like $1 or ano_publicacao::varchar like $1 or lower(editora) like $1 or lower(pais::varchar) like $1 or  l.id_livro in (
+		select la.id_livro
+		from livro_autor la
+		join autor a on a.id_autor = la.id_autor
+		where lower(a.nome) like $1
+	)`
 	linhas, erro := conexao.Query(context.Background(), textoQuery, busca)
 	if erro != nil {
 		return []modelos.LivroResposta{}
@@ -394,7 +402,7 @@ func PegarAutoresAssociadosAoLivro(idLivro int) ([]modelos.AutorResposta, error)
 func PegarCategoriasAssociadosAoLivro(idLivro int) ([]modelos.Categoria, error) {
 	conexao := PegarConexao()
 	consulta := `
-		SELECT c.id_categoria, c.descricao 
+		SELECT c.id_categoria, c.descricao, c.ativo
 		FROM categoria c
 		INNER JOIN livro_categoria lc ON c.id_categoria = lc.id_categoria
 		WHERE lc.id_livro = $1
@@ -406,7 +414,7 @@ func PegarCategoriasAssociadosAoLivro(idLivro int) ([]modelos.Categoria, error) 
 	var categorias []modelos.Categoria
 	for linhas.Next() {
 		var categoria modelos.Categoria
-		linhas.Scan(&categoria.IdDaCategoria, &categoria.Descricao)
+		linhas.Scan(&categoria.IdDaCategoria, &categoria.Descricao, &categoria.Ativo)
 		categorias = append(categorias, categoria)
 	}
 
