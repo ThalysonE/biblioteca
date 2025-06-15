@@ -125,40 +125,42 @@ class _LibraryDashboardState extends State<LibraryDashboard> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isSmallScreen = constraints.maxWidth < 600;
-          return Column(
-            children: [
-              const BreadCrumb(breadcrumb: ["Início"], icon: Icons.home),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    SummaryCards(
-                      loansToday: loansToday,
-                      returnsToday: returnsToday,
-                      delaysToday: delaysToday,
-                      onReportsPressed: () {
-                        // Navega para a tela de relatórios
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const Relatorios(),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 150),
-                    AspectRatio(
-                      aspectRatio: isSmallScreen ? 1 : 4,
-                      child: LineChart(
-                        _buildLineChartData(loanSpots, returnSpots, delaySpots,
-                            adjustedMaxY, weekDays, isSmallScreen),
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                const BreadCrumb(breadcrumb: ["Início"], icon: Icons.home),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      SummaryCards(
+                        loansToday: loansToday,
+                        returnsToday: returnsToday,
+                        delaysToday: delaysToday,
+                        onReportsPressed: () {
+                          // Navega para a tela de relatórios
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const Relatorios(),
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 150),
+                      AspectRatio(
+                        aspectRatio: isSmallScreen ? 1 : 4,
+                        child: LineChart(
+                          _buildLineChartData(loanSpots, returnSpots, delaySpots,
+                              adjustedMaxY, weekDays, isSmallScreen),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
