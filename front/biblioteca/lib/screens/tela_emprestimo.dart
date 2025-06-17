@@ -6,6 +6,7 @@ import 'package:biblioteca/data/providers/exemplares_provider.dart';
 import 'package:biblioteca/data/providers/usuario_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca/widgets/navegacao/bread_crumb.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -696,7 +697,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                           vertical: 10,
-                                          horizontal: 14,
+                                          horizontal: 5,
                                         ),
                                         child: TextButton(
                                           style: TextButton.styleFrom(
@@ -719,7 +720,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                 color: Color.fromARGB(
                                                     255, 250, 244, 244),
                                                 fontWeight: FontWeight.w500,
-                                                fontSize: 14,
+                                                fontSize: 13,
                                               ),
                                               textAlign: TextAlign.center),
                                         ),
@@ -1244,6 +1245,10 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                           maxHeight: 40,
                                           minWidth: 200),
                                       child: TextField(
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly
+                                        ],
+                                        keyboardType: TextInputType.number,
                                         controller: _searchControllerBooks,
                                         decoration: InputDecoration(
                                           prefixIcon: const Icon(Icons.search),

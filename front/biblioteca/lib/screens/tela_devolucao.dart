@@ -3,6 +3,7 @@ import 'package:biblioteca/data/providers/emprestimo_provider.dart';
 import 'package:biblioteca/data/providers/exemplares_provider.dart';
 import 'package:biblioteca/widgets/navegacao/bread_crumb.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class TelaDevolucao extends StatefulWidget {
@@ -208,7 +209,7 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
     return Material(
       child: Column(
         children: [
-          BreadCrumb(
+          const BreadCrumb(
               breadcrumb: ['Início', 'Devolução'],
               icon: Icons.my_library_books_rounded),
           Padding(
@@ -229,6 +230,10 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
                         constraints: const BoxConstraints(
                             maxWidth: 800, maxHeight: 40, minWidth: 200),
                         child: TextField(
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          keyboardType: TextInputType.number,
                           controller: _searchControllerBooks,
                           decoration: InputDecoration(
                             prefixIcon: const Icon(Icons.search),
@@ -458,7 +463,7 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
                                         child: Text(
                                             selectedBoxExemplar[x].exemplarMap['IdDoExemplarLivro'].toString(),
                                             textAlign: TextAlign.center,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                                 fontWeight: FontWeight.w300,
                                                 fontSize: 14.5)),
                                       ),
