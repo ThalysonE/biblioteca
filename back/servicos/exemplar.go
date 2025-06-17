@@ -81,7 +81,8 @@ func AtualizarExemplar(idDaSessao uint64, loginDoUsuarioRequerente string,exempl
 	if (!achou) {
 		return	modelos.ExemplarLivro{}, ErroServicoExemplarExemplarInexistente
 	}
-	exemplarComDadosAtualizados, _ = banco.PegarExemplarPorId(exemplarComDadosAtualizados.IdDoExemplarLivro)
+	// Essa linha fazia a alteração usar os dados antigos
+	//exemplarComDadosAtualizados, _ = banco.PegarExemplarPorId(exemplarComDadosAtualizados.IdDoExemplarLivro)
 	return exemplarComDadosAtualizados,  erroBancoExemplarParaErroServicoExemplar(banco.AtualizarExemplar(exemplarComDadosAntigos, exemplarComDadosAtualizados))
 
 }

@@ -54,11 +54,13 @@ class ExemplarProvider with ChangeNotifier {
           idDaSessao, usuarioLogado, exemplar);
       final index = exemplares.indexWhere((e) => e.id == exemplar.id);
 
+      
       if (index != -1) {
         exemplares[index] = exemplarAtualizado;
         exemplares.sort((a, b) => a.titulo.compareTo(b.titulo));
         notifyListeners();
       }
+      
     } catch (e) {
       throw Exception("Erro ao alterar o exemplar: $e");
     }

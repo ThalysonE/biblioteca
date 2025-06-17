@@ -54,6 +54,16 @@ class _ExemplaresPageState extends State<ExemplaresPage> {
               padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 40),
               child: Column(
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Text(
+                      widget.book.titulo,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   Text("Total de exemplares: ${exemplaresDoLivro.length}"),
                   Table(
                     border: TableBorder.all(
@@ -79,7 +89,7 @@ class _ExemplaresPageState extends State<ExemplaresPage> {
                           Padding(
                             padding: EdgeInsets.all(8.0),
                             child: Text(
-                              'ISBN',
+                              'Status',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -93,7 +103,7 @@ class _ExemplaresPageState extends State<ExemplaresPage> {
                           Padding(
                             padding: EdgeInsets.all(8.0),
                             child: Text(
-                              'Ações',
+                              'Cativo',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -115,8 +125,12 @@ class _ExemplaresPageState extends State<ExemplaresPage> {
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child:
-                                    Text(exemplarProvider.exemplares[i].isbn),
+                                child: Text(
+                                  exemplarProvider.exemplares[i].statusCodigo ==
+                                          1
+                                      ? 'Disponível'
+                                      : 'Emprestado',
+                                ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
@@ -133,35 +147,38 @@ class _ExemplaresPageState extends State<ExemplaresPage> {
                                     fontSize: 14,
                                     color: Colors.black87,
                                   ),
-                                  onChanged: (newValue) {
+                                  onChanged: (newValue) async {                                    
+                                    final novoExemplar = Exemplar(
+                                      id: exemplarProvider.exemplares[i].id,
+                                      cativo:
+                                          exemplarProvider.exemplares[i].cativo,
+                                      statusCodigo: exemplarProvider
+                                          .exemplares[i].statusCodigo,
+                                      estado: int.parse(newValue!),
+                                      ativo:
+                                          exemplarProvider.exemplares[i].ativo,
+                                      idLivro: exemplarProvider
+                                          .exemplares[i].idLivro,
+                                      isbn: exemplarProvider.exemplares[i].isbn,
+                                      titulo:
+                                          exemplarProvider.exemplares[i].titulo,
+                                      anoPublicacao: exemplarProvider
+                                          .exemplares[i].anoPublicacao,
+                                      editora: exemplarProvider
+                                          .exemplares[i].editora,
+                                      idPais:
+                                          exemplarProvider.exemplares[i].idPais,
+                                      nomePais: exemplarProvider
+                                          .exemplares[i].nomePais,
+                                      siglaPais: exemplarProvider
+                                          .exemplares[i].siglaPais,
+                                    );
                                     setState(() {
-                                      exemplarProvider.exemplares[i] = Exemplar(
-                                        id: exemplarProvider.exemplares[i].id,
-                                        cativo: exemplarProvider
-                                            .exemplares[i].cativo,
-                                        statusCodigo: exemplarProvider
-                                            .exemplares[i].statusCodigo,
-                                        estado: int.parse(newValue!),
-                                        ativo: exemplarProvider
-                                            .exemplares[i].ativo,
-                                        idLivro: exemplarProvider
-                                            .exemplares[i].idLivro,
-                                        isbn:
-                                            exemplarProvider.exemplares[i].isbn,
-                                        titulo: exemplarProvider
-                                            .exemplares[i].titulo,
-                                        anoPublicacao: exemplarProvider
-                                            .exemplares[i].anoPublicacao,
-                                        editora: exemplarProvider
-                                            .exemplares[i].editora,
-                                        idPais: exemplarProvider
-                                            .exemplares[i].idPais,
-                                        nomePais: exemplarProvider
-                                            .exemplares[i].nomePais,
-                                        siglaPais: exemplarProvider
-                                            .exemplares[i].siglaPais,
-                                      );
+                                      exemplarProvider.exemplares[i] =
+                                          novoExemplar;
                                     });
+                                    await exemplarProvider
+                                        .alterExemplar(novoExemplar);
                                   },
                                   items: const [
                                     DropdownMenuItem(
@@ -181,30 +198,10 @@ class _ExemplaresPageState extends State<ExemplaresPage> {
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: ElevatedButton(
-                                  onPressed: () {},
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        const Color.fromARGB(255, 38, 42, 79),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 5),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.edit, color: Colors.white),
-                                      SizedBox(width: 4),
-                                      Text('Editar',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          )),
-                                    ],
-                                  ),
+                                child:Text(
+                                  exemplarProvider.exemplares[i].cativo == true
+                                      ? 'Sim'
+                                      : 'Não',
                                 ),
                               ),
                             ],
@@ -220,8 +217,8 @@ class _ExemplaresPageState extends State<ExemplaresPage> {
                         id: 0,
                         idLivro: widget.book.idDoLivro,
                         cativo: false,
-                        status: 0,
-                        estado: 0,
+                        status: 1,
+                        estado: 1,
                         ativo: true,
                       );
 

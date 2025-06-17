@@ -8,7 +8,7 @@ class LivroProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   List<Livro> _livros = [];
-  List<Map<String,dynamic>> _livrosEnvio = [];
+  List<Map<String, dynamic>> _livrosEnvio = [];
 
   final num idDaSessao;
   final String usuarioLogado;
@@ -32,7 +32,6 @@ class LivroProvider extends ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-    
 
     try {
       final livrosAtingidos =
@@ -62,19 +61,22 @@ class LivroProvider extends ChangeNotifier {
     }
   }
   // Adicionar um novo livro
-  Future<bool> addLivro(Map<String, dynamic> livro, List<String> autores, List<String> categorias) async {
+  Future<bool> addLivro(Map<String, dynamic> livro, List<String> autores,
+      List<String> categorias) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
       if (_livros.any((l) => l.isbn == livro["Isbn"])) {
-        throw Exception("Livro com ISBN ${livro["Isbn"]} já existe.");
+        _error = "Livro com ISBN ${livro["Isbn"]} já existe.";
+        return false;
       }
 
-      print("Provider: Tentando enviar o Livro: \n $idDaSessao \n $usuarioLogado \n $livro \n autores \n $categorias");
-      await _livroService.addLivro(idDaSessao, usuarioLogado, livro, autores, categorias);
+      await _livroService.addLivro(
+          idDaSessao, usuarioLogado, livro, autores, categorias);
       _livrosEnvio.add(livro);
+      await loadLivros();
       return true;
     } catch (e) {
       _error = "Erro ao inserir novo Livro:\n$e";
@@ -86,7 +88,7 @@ class LivroProvider extends ChangeNotifier {
   }
 
   // Editar um livro existente
-  Future<void> editLivro(Map<String,dynamic> livro) async {
+  Future<void> editLivro(Map<String, dynamic> livro) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -117,11 +119,13 @@ class LivroProvider extends ChangeNotifier {
       if (!_livros.any((livro) => livro.idDoLivro == idLivro)) {
         throw Exception("Livro com ID $idLivro não encontrado.");
       }
-
-      await _livroService.deleteLivro(idLivro);
+      
+      await _livroService.deleteLivro(idDaSessao, usuarioLogado, idLivro);
       _livros.removeWhere((livro) => livro.idDoLivro == idLivro);
+      
+      await loadLivros();
     } catch (e) {
-      _error = "Erro ao deletar o Livro:\n$e";
+      _error = e.toString().replaceAll('Exception: ', '');
     } finally {
       _isLoading = false;
       notifyListeners();

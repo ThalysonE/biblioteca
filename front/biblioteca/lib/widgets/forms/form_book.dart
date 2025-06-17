@@ -141,81 +141,104 @@ class _FormBookState extends State<FormBook> {
     return false;
   }
 
+  void _limparCampos() {
+    _tituloController.clear();
+    _isbnController.clear();
+    _editoraController.clear();
+    _anoPublicacaoController.clear();
+    _numeroExemplaresController.text = "1";
+    _paisSelecionado = null;
+    _authorsControllers.clear();
+    _authorsControllers.add(TextEditingController());
+    _categoriesControllers.clear();
+    _categoriesControllers.add(TextEditingController());
+    setState(() {});
+  }
+
   void btnSalvar(context) async {
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, preencha todos os campos obrigatórios corretamente'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     LivroProvider provider = Provider.of<LivroProvider>(context, listen: false);
     final LivroEnvio newLivro;
     String? mensagem = '';
 
-    if (isModoEdicao()) {
-      newLivro = widget.livro!;
+    try {
+      if (isModoEdicao()) {
+        newLivro = widget.livro!;
 
-      newLivro.titulo = _tituloController.text;
-      newLivro.isbn = _isbnController.text;
-      newLivro.editora = _editoraController.text;
-      newLivro.anoPublicacao = _anoPublicacaoController.text;
-      newLivro.pais = int.parse(_paisSelecionado!);
+        newLivro.titulo = _tituloController.text;
+        newLivro.isbn = _isbnController.text;
+        newLivro.editora = _editoraController.text;
+        newLivro.anoPublicacao = _anoPublicacaoController.text;
+        newLivro.pais = int.parse(_paisSelecionado!);
 
-      await provider.editLivro(newLivro.toJson());
+        await provider.editLivro(newLivro.toJson());
 
-      mensagem = provider.hasErrors
-          ? "Ocorreu um erro ao tentar alterar este registro, por favor confira os dados inseridos"
-          : "Registro alterado com sucesso";
-    } else {
-      newLivro = LivroEnvio(
-        idDoLivro: 0,
-        titulo: _tituloController.text,
-        isbn: _isbnController.text,
-        editora: _editoraController.text,
-        anoPublicacao: _anoPublicacaoController.text.toString(),
-        pais: int.parse(_paisSelecionado!),
-      );
-
-      List<String> autores =
-          _authorsControllers.map((controller) => controller.text).toList();
-      List<String> categorias =
-          _categoriesControllers.map((controller) => controller.text).toList();
-
-      Map<String, dynamic> livroJson = newLivro.toJson();
-
-      await provider.addLivro(livroJson, autores, categorias);
-
-      if (provider.hasErrors) {
-        mensagem = provider.error ?? "Erro ao salvar o livro.";
+        mensagem = provider.hasErrors
+            ? "Ocorreu um erro ao tentar alterar este registro, por favor confira os dados inseridos"
+            : "Registro alterado com sucesso";
       } else {
-        int quantidadeExemplares =
-            int.tryParse(_numeroExemplaresController.text) ?? 1;
+        newLivro = LivroEnvio(
+          idDoLivro: 0,
+          titulo: _tituloController.text,
+          isbn: _isbnController.text,
+          editora: _editoraController.text,
+          anoPublicacao: _anoPublicacaoController.text.toString(),
+          pais: int.parse(_paisSelecionado!),
+        );
 
-        for (int i = 0; i < quantidadeExemplares; i++) {
-          ExemplarEnvio novoExemplar = ExemplarEnvio(
-            id: 0,
-            idLivro: newLivro.idDoLivro,
-            cativo: false,
-            status: 0,
-            estado: 0,
-            ativo: true,
-          );
-
-          await Provider.of<ExemplarProvider>(context, listen: false)
-              .addExemplar(novoExemplar);
+        List<String> autores =
+            _authorsControllers.map((controller) => controller.text).toList();
+        List<String> categorias = [];
+        if (_categoriaSelecionada != null && _categoriaSelecionada!.isNotEmpty) {
+          categorias.add(_categoriaSelecionada!);
         }
+        categorias.addAll(_categoriesControllers
+            .map((controller) => controller.text)
+            .where((text) => text.isNotEmpty)
+            .toList());
 
-        mensagem = "Cadastro realizado com sucesso";
+        Map<String, dynamic> livroJson = newLivro.toJson();
+
+        bool sucesso = await provider.addLivro(livroJson, autores, categorias);
+
+        mensagem = !sucesso
+            ? "Ocorreu um erro ao tentar cadastrar este registro, por favor confira os dados inseridos"
+            : "Registro cadastrado com sucesso";
+
+        if (sucesso) {
+          _limparCampos();
+          Navigator.of(context).pushReplacementNamed(AppRoutes.livros);
+        }
       }
 
-      mensagem = provider.hasErrors
-          ? provider.error
-          : "Cadastro realizado com sucesso";
-    }
+      if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(mensagem!),
-          backgroundColor: provider.hasErrors ? Colors.red : Colors.green),
-    );
-
-    if (!provider.hasErrors) {
-      Navigator.pushNamedAndRemoveUntil(
-          context, AppRoutes.livros, ModalRoute.withName(AppRoutes.home));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(mensagem),
+          backgroundColor: provider.hasErrors ? Colors.red : Colors.green,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao processar a operação: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
     }
   }
 
@@ -250,12 +273,11 @@ class _FormBookState extends State<FormBook> {
         setState(() {
           _tituloController.text = data['title'] ?? '';
           _editoraController.text = data['publisher'] ?? '';
-          _anoPublicacaoController.text =
-              data['publication_date']?.substring(0, 4) ?? '';
-          _paisController.text = (data['page_count'] ?? '').toString();
+          _anoPublicacaoController.text = data['year'] != null ? '${data['year']}-01-01' : '';
 
-          _authorsControllers.clear();
+          
           if (data['authors'] != null) {
+            _authorsControllers.clear();
             for (String autor in data['authors']) {
               _authorsControllers.add(TextEditingController(text: autor));
             }
@@ -390,16 +412,14 @@ class _FormBookState extends State<FormBook> {
                           if (value == null || value.isEmpty) {
                             return "Preencha esse campo";
                           }
-                          // final testNum = int.tryParse(value);
-                          // if (testNum == null) {
-                          //   return "Apenas numeros neste campo";
-                          // }
-                          // if (value.length != 4) {
-                          //   return "Coloque o ano em um formato de 4 digitos. Ex: 2015";
-                          // }
-                          // if (testNum > DateTime.now().year) {
-                          //   return "Confira se esta data está correta";
-                          // }
+                          try {
+                            DateTime.parse(value);
+                            if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
+                              return "Use o formato YYYY-MM-DD";
+                            }
+                          } catch (e) {
+                            return "Data inválida";
+                          }
                           return null;
                         },
                       ),
@@ -502,8 +522,7 @@ class _FormBookState extends State<FormBook> {
                                         ? DropdownButtonFormField<String>(
                                             value: _categoriaSelecionada,
                                             decoration: const InputDecoration(
-                                              label: CampoObrigatorio(
-                                                  label: "Categoria Principal"),
+                                              label: Text("Categoria Principal"),
                                               border: OutlineInputBorder(),
                                             ),
                                             items: categoriasPrincipais
@@ -519,13 +538,6 @@ class _FormBookState extends State<FormBook> {
                                               setState(() {
                                                 _categoriaSelecionada = value;
                                               });
-                                            },
-                                            validator: (value) {
-                                              if (value == null ||
-                                                  value.isEmpty) {
-                                                return "Selecione uma categoria principal";
-                                              }
-                                              return null;
                                             },
                                           )
                                         : TextFormField(

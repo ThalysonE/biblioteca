@@ -32,7 +32,6 @@ class ExemplarService {
     final Map<String, dynamic> body = {
       "IdDaSessao": idDaSessao,
       "LoginDoUsuario": loginDoUsuarioRequerente,
-      
     };
     final response = await _api.requisicao(
       apiRoute,
@@ -54,7 +53,8 @@ class ExemplarService {
       "IdDoExemplarLivro": exemplar.id,
       "IdDoLivro": exemplar.idLivro,
       "Estado": exemplar.estado,
-      "Status": 1, // 0 - emprestado 1 - disponivel 2 - indisponivel NOTA: colocar isso num enum
+      "Status":
+          1, // 0 - emprestado 1 - disponivel 2 - indisponivel NOTA: colocar isso num enum
       "Ativo": exemplar.ativo
     };
 
@@ -78,13 +78,10 @@ class ExemplarService {
       "IdDaSessao": idDaSessao,
       "LoginDoUsuario": loginDoUsuarioRequerente,
       "IdDoExemplarLivro": exemplar.id,
-      "Titulo": exemplar.titulo,
-      "AnoPublicacao": exemplar.anoPublicacao.toIso8601String(),
-      "Editora": exemplar.editora,
-      "Isbn": exemplar.isbn,
       "IdDoLivro": exemplar.idLivro,
-      "Estado": exemplar.estado,
+      "Cativo": exemplar.cativo,
       "Status": exemplar.statusCodigo,
+      "Estado": exemplar.estado,
       "Ativo": exemplar.ativo
     };
 
@@ -97,6 +94,8 @@ class ExemplarService {
     if (response.statusCode != 200) {
       throw Exception(response.data);
     }
+    print("Response $response");
+    print("Tentando enviar esse body: $body");
 
     return exemplaresAtingidosFromJson(response.data).exemplares[0];
   }
@@ -107,7 +106,12 @@ class ExemplarService {
     final Map<String, dynamic> body = {
       "IdDaSessao": idDaSessao,
       "LoginDoUsuario": loginDoUsuarioRequerente,
-      "IdDoExemplarLivro": id
+      "IdDoExemplarLivro": id,
+      "IdDoLivro": 0,
+      "Cativo": false,
+      "Status": 0,
+      "Estado": 0,
+      "Ativo": false
     };
     final response = await _api.requisicao(
       apiRoute,
