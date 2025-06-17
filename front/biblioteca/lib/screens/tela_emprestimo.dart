@@ -65,7 +65,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
   }
   
    void searchUsers() async{
-    final searchQuery = _searchController.text.toLowerCase();
+    final searchQuery = _searchController.text.toLowerCase().trim();
     if (showSearchBooks) {
       selectUser = null;
       showBooks = false;
