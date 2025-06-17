@@ -20,22 +20,11 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
   late List<Livro> filteredBooks = [];
   late Livro? selectBook;
   late bool search = false;
-  late ExemplarProvider providerExemplar;
-  late List<Exemplar> exemplares;
-  late List<Exemplar> filteredExemplares;
 
   @override
   void initState() {
     super.initState();
-    providerExemplar = Provider.of<ExemplarProvider>(context, listen: false);
     _searchController = TextEditingController();
-    if (providerExemplar.exemplares.isEmpty) {
-      Provider.of<ExemplarProvider>(context, listen: false)
-          .loadExemplares()
-          .then((_) {
-        setState(() {});
-      });
-    }
   }
   scafoldMsg(String msg, int tipo){
     return ScaffoldMessenger.of(context).showSnackBar( SnackBar(
@@ -51,23 +40,38 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
             duration: const Duration(seconds: 2),
           ));
   }
-  // falta alterar isso aqui ainda(nada)
-  void SearchExemplares(int idDoLivro) {
-    filteredExemplares =
-        exemplares.where((exemplar) => exemplar.idLivro == idDoLivro).toList();
-    filteredExemplares.sort((a, b) => a.id.compareTo(b.id));
+
+  Future<List<Exemplar>> SearchExemplares(int idDoLivro) async{
+    List<Exemplar> exemplaresLivro = [];
+    try{
+      final response = await Provider.of<ExemplarProvider>(context, listen: false).fetchExemplaresIdLivro(idDoLivro);
+      exemplaresLivro = response;
+      return exemplaresLivro;
+    }catch(e){
+      print(e.toString());
+      return [];
+    }
   }
 
-  void searchBooks()async{
-    final seachQuery = _searchController.text; // a pesquisa faz diferença de letra maiscula e minuscula
+  Future<void> searchBooks()async{
+    final seachQuery = _searchController.text.trim() ; // a pesquisa faz diferença de letra maiscula e minuscula
     selectBook = null;
     if(seachQuery.isNotEmpty){
       try{
         final resposta = await Provider.of<LivroProvider>(context, listen: false).searchLivros(seachQuery);
+        filteredBooks = resposta;
+        try{
+          await Future.wait([
+            for(final x in filteredBooks) () async{
+              final exemplares = await SearchExemplares(x.idDoLivro);
+              x.listaExemplares = exemplares;
+            }()
+          ]);
+        }catch(e){
+            scafoldMsg('Erro ao carregar os exemplares dos livro', 1);
+        }
         setState(() {
           search = true;
-          print(resposta);
-          filteredBooks = resposta;
         });
       }catch(e){
         print(e.toString());
@@ -78,7 +82,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
 
   @override
   Widget build(BuildContext context) {
-    exemplares = providerExemplar.exemplares;
+    
     return Material(
       child: Column(
         children: [
@@ -321,7 +325,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 13, horizontal: 8),
                                         child: Text(
-                                          '${providerExemplar.qtdExemplaresLivro(filteredBooks[x].idDoLivro)}',
+                                          filteredBooks[x].listaExemplares.length.toString(),
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                               fontWeight: FontWeight.w300,
@@ -346,8 +350,6 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                           onPressed: () {
                                             setState(() {
                                               selectBook = filteredBooks[x];
-                                              SearchExemplares(
-                                                  selectBook!.idDoLivro);
                                             });
                                           },
                                           child: const Text(
@@ -585,7 +587,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                                       vertical: 10,
                                                       horizontal: 8),
                                                   child: Text(
-                                                    '${providerExemplar.qtdExemplaresLivro(selectBook!.idDoLivro)}',
+                                                    selectBook!.listaExemplares.length.toString(),
                                                     textAlign: TextAlign.center,
                                                     style: TextStyle(
                                                         fontWeight:
@@ -711,7 +713,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                       ],
                                     ),
                                     for (int x = 0;
-                                        x < filteredExemplares.length;
+                                        x < selectBook!.listaExemplares.length;
                                         x++)
                                       TableRow(
                                         decoration: BoxDecoration(
@@ -726,7 +728,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 10, horizontal: 8),
                                             child: Text(
-                                              filteredExemplares[x]
+                                              selectBook!.listaExemplares[x]
                                                   .id
                                                   .toString(),
                                               textAlign: TextAlign.center,
@@ -739,7 +741,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 10, horizontal: 8),
                                             child: Text(
-                                              filteredExemplares[x].titulo,
+                                              selectBook!.listaExemplares[x].titulo,
                                               textAlign: TextAlign.left,
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w300,
@@ -754,12 +756,12 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                                   MainAxisAlignment.center,
                                               children: [
                                                 Icon(
-                                                  filteredExemplares[x]
+                                                  selectBook!.listaExemplares[x]
                                                               .statusCodigo ==
                                                           1
                                                       ? Icons.check_circle
                                                       : Icons.cancel,
-                                                  color: filteredExemplares[x]
+                                                  color: selectBook!.listaExemplares[x]
                                                               .statusCodigo ==
                                                           1
                                                       ? Colors.green
@@ -769,7 +771,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                                   width: 5,
                                                 ),
                                                 Text(
-                                                  filteredExemplares[x]
+                                                  selectBook!.listaExemplares[x]
                                                       .getStatus,
                                                   style: TextStyle(
                                                       fontWeight:
@@ -783,7 +785,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 10, horizontal: 8),
                                             child: Text(
-                                              filteredExemplares[x].getEstado,
+                                              selectBook!.listaExemplares[x].getEstado,
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w300,
@@ -794,7 +796,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 10, horizontal: 8),
                                             child: Text(
-                                              filteredExemplares[x].cativo? 'Sim':'Não',
+                                              selectBook!.listaExemplares[x].cativo? 'Sim':'Não',
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w300,

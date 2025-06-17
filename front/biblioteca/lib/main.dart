@@ -24,6 +24,7 @@ import 'package:biblioteca/widgets/tables/author_table_page.dart';
 import 'package:biblioteca/widgets/tables/book_table_page.dart';
 import 'package:biblioteca/widgets/tables/history_table.dart';
 import 'package:biblioteca/widgets/tables/user_table_page.dart';
+import 'package:biblioteca/widgets/testarRotas.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -58,7 +59,7 @@ void main() async {
     print("O arquivo .env não existe ou está vazio");
   }
   Provider.debugCheckInvalidValueType = null;
-  runApp(const Myapp());
+  runApp( Myapp());
 
   if (processoApi != null) {
     processoApi.kill();
@@ -74,8 +75,8 @@ void main() async {
 }
 
 class Myapp extends StatelessWidget {
-  const Myapp({super.key});
-
+   Myapp({super.key});
+  final MyRouteObserver observer = MyRouteObserver();
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -124,6 +125,7 @@ class Myapp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        navigatorObservers: [observer],
         localizationsDelegates: const [
           GlobalCupertinoLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -146,7 +148,7 @@ class Myapp extends StatelessWidget {
         //home: const TelaPaginaIncial(),
         routes: {
           AppRoutes.login: (ctx) => const TelaLogin(),
-          AppRoutes.logout: (ctx) => const Myapp(),
+          AppRoutes.logout: (ctx) =>  Myapp(),
           AppRoutes.home: (ctx) => const TelaPaginaIncial(),
           AppRoutes.dashboard: (ctx) => const LibraryDashboard(),
           AppRoutes.usuarios: (ctx) => const UserTablePage(),

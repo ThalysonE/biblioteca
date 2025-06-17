@@ -33,21 +33,6 @@ class ExemplarProvider with ChangeNotifier {
     }
   }
 
-  int qtdExemplaresLivro(num idDoLivro) {
-    int qtd =
-        exemplares.where((exemplar) => exemplar.idLivro == idDoLivro).length;
-    return qtd;
-  }
-  // Future<void> searchExemplares(String textoDeBusca) async {
-  //   try {
-  //     final response = await exemplarService.searchExemplares(idDaSessao, usuarioLogado, textoDeBusca);
-  //     exemplares = response.exemplares;
-  //     exemplares.sort((a, b) => a.titulo.compareTo(b.titulo));
-  //     notifyListeners();
-  //   } catch (e) {
-  //     throw Exception("Erro ao pesquisar os exemplares: $e");
-  //   }
-  // }
 
   // Adiciona um novo exemplar
   Future<void> addExemplar(ExemplarEnvio exemplar) async {
@@ -89,5 +74,11 @@ class ExemplarProvider with ChangeNotifier {
     } catch (e) {
       throw Exception("Erro ao remover o exemplar: $e");
     }
+  }
+  Future<List<Exemplar>> fetchExemplaresIdLivro(int idLivro) async {
+    List<Exemplar> exemplareIdLivro = [];
+    final response = await exemplarService.searchExemplaresIdLivro(idDaSessao, usuarioLogado, idLivro);
+    exemplareIdLivro = response.exemplares;
+    return exemplareIdLivro;
   }
 }

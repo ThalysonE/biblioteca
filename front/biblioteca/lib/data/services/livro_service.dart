@@ -41,6 +41,7 @@ class LivroService {
       'GET',
       body,
     );
+    print('Status: ${response.statusCode}');
 
     if (response.statusCode != 200) {
       throw Exception(response.data);

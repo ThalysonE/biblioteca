@@ -65,9 +65,11 @@ class _LibraryDashboardState extends State<LibraryDashboard> {
       }catch(e){
         print('Erro ao carregar os emprestimos: ${e.toString()}');
       }
-      setState(() {
-        emprestimos;
+      if (mounted) {
+        setState(() {
+          emprestimos;
       });
+}
   }
   @override
   Widget build(BuildContext context) {

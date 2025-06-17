@@ -113,7 +113,9 @@ class _TelaPaginaIncialState extends State<TelaPaginaIncial> {
     if (_selectedRoute != route) {
       setState(() {
         _selectedRoute = route;
-        _navigatorKey.currentState!.pushReplacementNamed(route);
+        _navigatorKey.currentState!.pushReplacementNamed(
+          route,
+        );
       });
     }
   }
@@ -195,6 +197,7 @@ class _TelaPaginaIncialState extends State<TelaPaginaIncial> {
                       color: AppTheme.drawerBackgroundColor,
                       borderRadius: BorderRadius.circular(10.0)),
                   child: Navigator(
+                    
                     key: _navigatorKey,
                     initialRoute: _selectedRoute,
                     onGenerateRoute: (RouteSettings settings) {
@@ -265,7 +268,7 @@ class _TelaPaginaIncialState extends State<TelaPaginaIncial> {
                         default:
                           page = const LibraryDashboard();
                       }
-                      return MaterialPageRoute(builder: (_) => page);
+                      return MaterialPageRoute(settings: RouteSettings(name: _selectedRoute), builder: (_) => page);
                     },
                   ),
                 ),

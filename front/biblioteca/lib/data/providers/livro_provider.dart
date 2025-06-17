@@ -58,7 +58,7 @@ class LivroProvider extends ChangeNotifier {
       loadedLivros= await _livroService.searchLivros(idDaSessao, usuarioLogado, textoDeBusca);
       return loadedLivros.livrosAtingidos;
     }catch(e){
-      throw Exception("UsuarioProvider: Erro ao carregar usuarios pesquisados - $e");
+      throw Exception("LivroProvider: Erro ao pesquisar livro - $e");
     }
   }
   // Adicionar um novo livro

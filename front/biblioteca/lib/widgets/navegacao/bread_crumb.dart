@@ -63,14 +63,26 @@ class _BreadCrumbItemState extends State<BreadCrumbItem> {
         InkWell(
           mouseCursor: !(widget.name == widget.breadcrumb.last)?SystemMouseCursors.click:SystemMouseCursors.basic,
            onTap: () {
-            if(widget.isFirst) context.read<MenuState>().expandedIndex = 0;
-            final routeName = widget.name;
-            final List<String> breadcrumbModificavel = List.from(widget.breadcrumb);
-              Navigator.of(context).popUntil((route) {
-                final shouldStop = breadcrumbModificavel.last == routeName;
-                if (!shouldStop) breadcrumbModificavel.removeLast();
-                return shouldStop;
-              });
+              if (widget.isFirst) {
+                context.read<MenuState>().expandedIndex = 0;
+              }
+
+              final routeName = widget.name;
+              print(widget.breadcrumb);
+              final List<String> breadcrumbModificavel = List.from(widget.breadcrumb);
+              if(widget.isFirst){
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              }else{
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).popUntil((route) {
+                      final shouldStop = breadcrumbModificavel.last == routeName;
+                      if (!shouldStop) breadcrumbModificavel.removeLast();
+                      return shouldStop;
+                    });
+                  }
+                });
+              }
           },
           onHover: (hovering) {
             setState(() {
