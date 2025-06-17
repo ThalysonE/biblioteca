@@ -41,7 +41,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
           ));
   }
 
-  Future<List<Exemplar>> SearchExemplares(int idDoLivro) async{
+  Future<List<Exemplar>> searchExemplares(int idDoLivro) async{
     List<Exemplar> exemplaresLivro = [];
     try{
       final response = await Provider.of<ExemplarProvider>(context, listen: false).fetchExemplaresIdLivro(idDoLivro);
@@ -54,7 +54,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
   }
 
   Future<void> searchBooks()async{
-    final seachQuery = _searchController.text.trim() ; // a pesquisa faz diferença de letra maiscula e minuscula
+    final seachQuery = _searchController.text.trim(); 
     selectBook = null;
     if(seachQuery.isNotEmpty){
       try{
@@ -63,7 +63,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
         try{
           await Future.wait([
             for(final x in filteredBooks) () async{
-              final exemplares = await SearchExemplares(x.idDoLivro);
+              final exemplares = await searchExemplares(x.idDoLivro);
               x.listaExemplares = exemplares;
             }()
           ]);
@@ -179,7 +179,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                           ConstrainedBox(
                             constraints: const BoxConstraints(
                               maxWidth: 1210,
-                              minWidth: 800,
+                              minWidth: 900,
                             ),
                             child: Table(
                               border: TableBorder.all(
@@ -191,7 +191,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                 2: FlexColumnWidth(0.20),
                                 3: FlexColumnWidth(0.14),
                                 4: FlexColumnWidth(0.10),
-                                5: FlexColumnWidth(0.12),
+                                5: FlexColumnWidth(0.13),
                               },
                               children: [
                                 const TableRow(
@@ -271,8 +271,8 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                   TableRow(
                                     decoration: BoxDecoration(
                                       color: x % 2 == 0
-                                          ? Color.fromRGBO(233, 235, 238, 75)
-                                          : Color.fromRGBO(255, 255, 255, 1),
+                                          ? const Color.fromRGBO(233, 235, 238, 75)
+                                          : const Color.fromRGBO(255, 255, 255, 1),
                                     ),
                                     children: [
                                       Padding(
@@ -281,7 +281,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                         child: Text(
                                           filteredBooks[x].isbn,
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               fontSize: 14.5),
                                         ),
@@ -292,7 +292,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                         child: Text(
                                           filteredBooks[x].titulo,
                                           textAlign: TextAlign.left,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               fontSize: 14.5),
                                         ),
@@ -303,7 +303,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                         child: Text(
                                           filteredBooks[x].autores[0]["nome"],
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               fontSize: 14.5),
                                         ),
@@ -316,7 +316,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                             filteredBooks[x].anoPublicacao,
                                           ),
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               fontSize: 14.5),
                                         ),
@@ -327,7 +327,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                         child: Text(
                                           filteredBooks[x].listaExemplares.length.toString(),
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               fontSize: 14.5),
                                         ),
@@ -335,7 +335,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                           vertical: 10,
-                                          horizontal: 14,
+                                          horizontal: 5,
                                         ),
                                         child: TextButton(
                                           style: TextButton.styleFrom(
@@ -355,10 +355,10 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                           child: const Text(
                                             'Selecionar',
                                             style: TextStyle(
-                                              color: const Color.fromARGB(
+                                              color: Color.fromARGB(
                                                   255, 250, 244, 244),
                                               fontWeight: FontWeight.w500,
-                                              fontSize: 14,
+                                              fontSize: 13,
                                             ),
                                             textAlign: TextAlign.center,
                                           ),
@@ -377,7 +377,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                               children: [
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Color.fromARGB(230, 227, 242, 253),
+                                    color: const Color.fromARGB(230, 227, 242, 253),
                                     borderRadius: BorderRadius.circular(8),
                                     boxShadow: [
                                       BoxShadow(
@@ -400,13 +400,13 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                               const EdgeInsets.only(left: 4),
                                           child: Row(
                                             children: [
-                                              Icon(
+                                              const Icon(
                                                 Icons.book,
                                                 color: Color.fromARGB(
                                                     255, 46, 125, 50),
                                                 size: 23,
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                 width: 8,
                                               ),
                                               Text(
@@ -427,7 +427,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                         Divider(
                                             thickness: 2,
                                             color: Colors.grey[400]),
-                                        SizedBox(
+                                        const SizedBox(
                                           height: 10,
                                         ),
                                         Table(
@@ -519,7 +519,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                                     233, 235, 238, 75),
                                               ),
                                               children: [
-                                                Padding(
+                                                const Padding(
                                                   padding: EdgeInsets.symmetric(
                                                       vertical: 10,
                                                       horizontal: 8),
@@ -528,46 +528,46 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsets.symmetric(
+                                                  padding: const EdgeInsets.symmetric(
                                                       vertical: 10,
                                                       horizontal: 8),
                                                   child: Text(
                                                     selectBook!.isbn,
                                                     textAlign: TextAlign.center,
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                         fontWeight:
                                                             FontWeight.w300,
                                                         fontSize: 14.5),
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsets.symmetric(
+                                                  padding:const  EdgeInsets.symmetric(
                                                       vertical: 10,
                                                       horizontal: 8),
                                                   child: Text(
                                                     selectBook!.titulo,
                                                     textAlign: TextAlign.left,
-                                                    style: TextStyle(
+                                                    style:const  TextStyle(
                                                         fontWeight:
                                                             FontWeight.w300,
                                                         fontSize: 14.5),
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsets.symmetric(
+                                                  padding:const  EdgeInsets.symmetric(
                                                       vertical: 10,
                                                       horizontal: 8),
                                                   child: Text(
                                                     selectBook!.autores[0]['nome'],
                                                     textAlign: TextAlign.center,
-                                                    style: TextStyle(
+                                                    style:const  TextStyle(
                                                         fontWeight:
                                                             FontWeight.w300,
                                                         fontSize: 14.5),
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsets.symmetric(
+                                                  padding: const EdgeInsets.symmetric(
                                                       vertical: 10,
                                                       horizontal: 8),
                                                   child: Text(
@@ -576,20 +576,20 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                                       selectBook!.anoPublicacao,
                                                     ),
                                                     textAlign: TextAlign.center,
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                         fontWeight:
                                                             FontWeight.w300,
                                                         fontSize: 14.5),
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsets.symmetric(
+                                                  padding: const EdgeInsets.symmetric(
                                                       vertical: 10,
                                                       horizontal: 8),
                                                   child: Text(
                                                     selectBook!.listaExemplares.length.toString(),
                                                     textAlign: TextAlign.center,
-                                                    style: TextStyle(
+                                                    style:const  TextStyle(
                                                         fontWeight:
                                                             FontWeight.w300,
                                                         fontSize: 14.5),
@@ -610,12 +610,12 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                   padding: const EdgeInsets.only(left: 4),
                                   child: Row(
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.library_books,
                                         color: Color.fromARGB(255, 46, 125, 50),
                                         size: 24,
                                       ),
-                                      SizedBox(
+                                      const SizedBox(
                                         width: 8,
                                       ),
                                       Text(
@@ -634,7 +634,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                   ),
                                 ),
                                 Divider(thickness: 2, color: Colors.grey[400]),
-                                SizedBox(
+                                const SizedBox(
                                   height: 10,
                                 ),
                                 Table(
@@ -718,9 +718,9 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                       TableRow(
                                         decoration: BoxDecoration(
                                           color: x % 2 == 0
-                                              ? Color.fromRGBO(
+                                              ? const Color.fromRGBO(
                                                   233, 235, 238, 75)
-                                              : Color.fromRGBO(
+                                              : const Color.fromRGBO(
                                                   255, 255, 255, 1),
                                         ),
                                         children: [
@@ -732,7 +732,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                                   .id
                                                   .toString(),
                                               textAlign: TextAlign.center,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   fontWeight: FontWeight.w300,
                                                   fontSize: 14.5),
                                             ),
@@ -743,14 +743,14 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                             child: Text(
                                               selectBook!.listaExemplares[x].titulo,
                                               textAlign: TextAlign.left,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   fontWeight: FontWeight.w300,
                                                   fontSize: 14.5),
                                             ),
                                           ),
                                           Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 10, horizontal: 8),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10, horizontal: 3),
                                             child: Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
@@ -767,16 +767,18 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                                       ? Colors.green
                                                       : Colors.red,
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 5,
                                                 ),
-                                                Text(
-                                                  selectBook!.listaExemplares[x]
-                                                      .getStatus,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w300,
-                                                      fontSize: 14.5),
+                                                Flexible(
+                                                  child: Text(
+                                                    selectBook!.listaExemplares[x]
+                                                        .getStatus,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w300,
+                                                        fontSize: 14.5),
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -787,7 +789,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                             child: Text(
                                               selectBook!.listaExemplares[x].getEstado,
                                               textAlign: TextAlign.center,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   fontWeight: FontWeight.w300,
                                                   fontSize: 14.5),
                                             ),
@@ -798,7 +800,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                             child: Text(
                                               selectBook!.listaExemplares[x].cativo? 'Sim':'Não',
                                               textAlign: TextAlign.center,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   fontWeight: FontWeight.w300,
                                                   fontSize: 14.5),
                                             ),
@@ -809,6 +811,9 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                 ),
                               ],
                             ),
+                          ),
+                          const SizedBox(
+                            height: 40,
                           )
                       ],
                     )
