@@ -197,9 +197,13 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
   }
   Future<void> DevolverExemplares(List<EmprestimosModel> emprestimosRenov) async{
     final copia = List.from(emprestimosRenov);
-    for(EmprestimosModel item in copia){
-      print('Item: ${item.IdDoEmprestimo}');
+    try{
+      for(EmprestimosModel item in copia){
       await Provider.of<EmprestimoProvider>(context, listen: false).devolver(item.IdDoEmprestimo);
+      }
+    }catch(e){
+      print(e.toString());
+      msgSnackBar('Houve um erro na devolução dos livros', 1);
     }
     
   }
