@@ -126,7 +126,7 @@ class EmprestimoService {
       "LoginDoUsuario": loginDoUsuarioRequerente,
       "IdDoExemplarLivro": exemplar.id,
       "Titulo": exemplar.titulo,
-      "AnoPublicacao": exemplar.anoPublicacao.toIso8601String(),
+      "AnoPublicacao": exemplar.anoPublicacao,
       "Editora": exemplar.editora,
       "Isbn": exemplar.isbn,
       "IdDoLivro": exemplar.idLivro,

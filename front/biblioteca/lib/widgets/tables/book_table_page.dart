@@ -244,7 +244,6 @@ class BookTablePageState extends State<BookTablePage> {
                               child: Text(
                                   paginatedBooks[x]
                                       .anoPublicacao
-                                      .year
                                       .toString(),
                                   textAlign: TextAlign.left,
                                   style: const TextStyle(

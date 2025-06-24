@@ -66,7 +66,7 @@ class Exemplar {
   final int idLivro;
   final String isbn;
   final String titulo;
-  final DateTime anoPublicacao;
+  final int anoPublicacao;
   final String editora;
   final int idPais;
   final String nomePais;
@@ -104,7 +104,7 @@ class Exemplar {
       idLivro: json['IdDoLivro'],
       isbn: json['Isbn'],
       titulo: json['Titulo'],
-      anoPublicacao: DateTime.parse(json['AnoPublicacao']),
+      anoPublicacao: json['AnoPublicacao'],
       editora: json['Editora'],
       idPais: json['IdDoPais'],
       nomePais: json['NomePais'],
@@ -122,7 +122,7 @@ class Exemplar {
       'IdDoLivro': idLivro,
       'Isbn': isbn,
       'Titulo': titulo,
-      'AnoPublicacao': anoPublicacao.toIso8601String(),
+      'AnoPublicacao': anoPublicacao,
       'Editora': editora,
       'IdDoPais': idPais,
       'NomePais': nomePais,

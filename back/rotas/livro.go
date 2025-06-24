@@ -16,7 +16,7 @@ type requisicaoLivro struct {
 	Id                       int      `validate:"optional"`
 	Isbn                     string   `validate:"optional"`
 	Titulo                   string   `validate:"optional"`
-	AnoPublicacao            string   `validate:"optional"`
+	AnoPublicacao            int   `validate:"optional"`
 	Editora                  string   `validate:"optional"`
 	Pais                     int      `validate:"optional"`
 	NomeDosAutores           []string `validate:"optional"`
@@ -93,7 +93,7 @@ func Livro(resposta http.ResponseWriter, requisicao *http.Request) {
 	switch requisicao.Method {
 	case "POST":
 		if len(requisicaoLivro.Titulo) < 1 ||
-			len(requisicaoLivro.AnoPublicacao) < 1 ||
+			requisicaoLivro.AnoPublicacao < 1 ||
 			len(requisicaoLivro.Editora) < 1 {
 			resposta.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(resposta, "Algum campo necessário para o cadastro não foi fornecido")
@@ -147,7 +147,7 @@ func Livro(resposta http.ResponseWriter, requisicao *http.Request) {
 
 	case "PUT":
 		if len(requisicaoLivro.Titulo) < 1 ||
-			len(requisicaoLivro.AnoPublicacao) < 1 ||
+			requisicaoLivro.AnoPublicacao < 1 ||
 			len(requisicaoLivro.Editora) < 1 {
 			resposta.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(resposta, "Algum campo necessário para o cadastro não foi fornecido")

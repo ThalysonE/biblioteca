@@ -24,6 +24,7 @@ func PesquisarPais(idDaSessao uint64, loginDoUsuarioPesquisador string, pais mod
 	if sessao.VerificaSeIdDaSessaoEValido(idDaSessao, loginDoUsuarioPesquisador) != sessao.VALIDO {
 		return []modelos.Pais{}, ErroServicoPaisSessaoInvalida
 	}
+
 	permissaoDoUsuario := sessao.PegarSessaoAtual()[idDaSessao].Permissao
 
 	if permissaoDoUsuario&utilidades.PermissaoPais != utilidades.PermissaoPais {

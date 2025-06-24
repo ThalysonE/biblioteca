@@ -178,7 +178,7 @@ class _FormBookState extends State<FormBook> {
         newLivro.titulo = _tituloController.text;
         newLivro.isbn = _isbnController.text;
         newLivro.editora = _editoraController.text;
-        newLivro.anoPublicacao = _anoPublicacaoController.text;
+        newLivro.anoPublicacao = int.parse(_anoPublicacaoController.text);
         newLivro.pais = int.parse(_paisSelecionado!);
 
         await provider.editLivro(newLivro.toJson());
@@ -192,7 +192,7 @@ class _FormBookState extends State<FormBook> {
           titulo: _tituloController.text,
           isbn: _isbnController.text,
           editora: _editoraController.text,
-          anoPublicacao: _anoPublicacaoController.text.toString(),
+          anoPublicacao: int.parse(_anoPublicacaoController.text.toString()),
           pais: int.parse(_paisSelecionado!),
         );
 
@@ -273,7 +273,7 @@ class _FormBookState extends State<FormBook> {
         setState(() {
           _tituloController.text = data['title'] ?? '';
           _editoraController.text = data['publisher'] ?? '';
-          _anoPublicacaoController.text = data['year'] != null ? '${data['year']}-01-01' : '';
+          _anoPublicacaoController.text = data['year'] != null ? '${data['year']}' : '';
 
           
           if (data['authors'] != null) {
@@ -413,12 +413,12 @@ class _FormBookState extends State<FormBook> {
                             return "Preencha esse campo";
                           }
                           try {
-                            DateTime.parse(value);
-                            if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
-                              return "Use o formato YYYY-MM-DD";
+                            var ano = int.parse(value);
+                            if (ano > DateTime.now().year || ano < 1) {
+                              return "Ano inválido";
                             }
                           } catch (e) {
-                            return "Data inválida";
+                            return "Ano inválida";
                           }
                           return null;
                         },

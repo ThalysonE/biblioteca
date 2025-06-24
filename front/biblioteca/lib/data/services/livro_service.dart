@@ -62,7 +62,7 @@ class LivroService {
       "Id": livro["IdDoLivro"],
       "Isbn": livro["Isbn"],
       "Titulo": livro["Titulo"],
-      "AnoPublicacao": livro["AnoPublicacao"].toString(),
+      "AnoPublicacao": livro["AnoPublicacao"],
       "Editora": livro["Editora"],
       "Pais": livro["Pais"],
       "NomeDosAutores": autores,

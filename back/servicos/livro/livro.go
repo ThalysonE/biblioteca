@@ -42,7 +42,7 @@ func CriarLivro(idDaSessao uint64, loginUsuarioCriador string, novoLivro modelos
 		return ErroDeServicoDoLivroSemPermisao
 	}
 
-	if _, erro := time.Parse(time.DateOnly, novoLivro.AnoPublicacao); erro != nil {
+	if novoLivro.AnoPublicacao > time.Now().Year()  || novoLivro.AnoPublicacao < 0 {
 		return ErroDeServicoDoLivroAnoPublicaoInvalida
 	}
 
@@ -92,7 +92,7 @@ func AtualizarLivro(idDaSessao uint64, loginDoUsuarioRequerente string, livroCom
 		return livroComDadosAtualizados, ErroDeServicoDoLivroSemPermisao
 	}
 
-	if _, erro := time.Parse(time.DateOnly, livroComDadosAtualizados.AnoPublicacao); erro != nil {
+	if livroComDadosAtualizados.AnoPublicacao > time.Now().Year()  || livroComDadosAtualizados.AnoPublicacao < 0 {
 		return livroComDadosAtualizados, ErroDeServicoDoLivroAnoPublicaoInvalida
 	}
 

@@ -216,8 +216,9 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
-                                DateFormat('dd/MM/YYYY')
-                                    .format(exemplar.anoPublicacao),
+                              '${exemplar.anoPublicacao}',
+                                // DateFormat('dd/MM/YYYY')
+                                //     .format(exemplar.anoPublicacao),
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w300, fontSize: 14)),
@@ -1562,10 +1563,10 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                             left: 8,
                                                             right: 8),
                                                     child: Text(
-                                                        DateFormat('dd/MM/yyyy').format(
-                                                            selectedBoxExemplar[
-                                                                    x]
-                                                                .anoPublicacao),
+                                                      '${selectedBoxExemplar[x].anoPublicacao}',
+                                                        // DateFormat('dd/MM/yyyy').format(
+                                                        //     selectedBoxExemplar[x].anoPublicacao
+                                                        // ),
                                                         textAlign:
                                                             TextAlign.center,
                                                         style:const TextStyle(

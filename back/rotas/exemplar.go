@@ -44,7 +44,7 @@ type ViewExemplarLivro struct {
 	IdDoLivro         int
 	Isbn              string
 	Titulo            string
-	AnoPublicacao     string
+	AnoPublicacao     int
 	Editora           string
 	IdDoPais          int
 	NomePais          string

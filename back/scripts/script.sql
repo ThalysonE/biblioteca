@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS livro(
 	id_livro SERIAL NOT NULL,
 	isbn VARCHAR(13) NOT NULL UNIQUE,
 	titulo VARCHAR(255) NOT NULL,
-	ano_publicacao DATE,
+	ano_publicacao int,
 	editora VARCHAR(255),
 	pais SMALLINT,
 	data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -230,9 +230,9 @@ INSERT INTO autor (nome, ano_nascimento, nacionalidade, sexo) VALUES
 
 -- Tabela livro
 INSERT INTO livro (isbn, titulo, ano_publicacao, editora, pais) VALUES
-('9781234567897', 'Dom Casmurro', '1899-01-01', 'Editora X', 1),
-('9780747532743', 'Harry Potter e a Pedra Filosofal', '1997-06-26', 'Bloomsbury', 3),
-('9780553103540', 'A Game of Thrones', '1996-08-06', 'Bantam Books', 2);
+('9781234567897', 'Dom Casmurro', 1899, 'Editora X', 1),
+('9780747532743', 'Harry Potter e a Pedra Filosofal', 1997, 'Bloomsbury', 3),
+('9780553103540', 'A Game of Thrones', 1996, 'Bantam Books', 2);
 
 
 -- Tabela livro_autor

@@ -110,7 +110,7 @@ func PesquisarLivro(busca string) []modelos.LivroResposta {
 	conexao := PegarConexao()
 	busca = "%" + strings.ToLower(busca) + "%"
 	textoQuery := `
-	select id_livro, isbn, titulo, to_char(ano_publicacao, 'yyyy-mm-dd'), editora, pais from livro l
+	select id_livro, isbn, titulo, ano_publicacao, editora, pais from livro l
 	where isbn like $1 or lower(titulo) like $1 or ano_publicacao::varchar like $1 or lower(editora) like $1 or lower(pais::varchar) like $1 or  l.id_livro in (
 		select la.id_livro
 		from livro_autor la
@@ -151,7 +151,7 @@ func PesquisarLivro(busca string) []modelos.LivroResposta {
 
 func PegarTodosLivros() []modelos.LivroResposta {
 	conexao := PegarConexao()
-	textoQuery := "select id_livro, isbn, titulo, to_char(ano_publicacao, 'yyyy-mm-dd'), editora, pais from livro"
+	textoQuery := "select id_livro, isbn, titulo, ano_publicacao, editora, pais from livro"
 	linhas, erro := conexao.Query(context.Background(), textoQuery)
 	if erro != nil {
 		return []modelos.LivroResposta{}
@@ -187,7 +187,7 @@ func PegarTodosLivros() []modelos.LivroResposta {
 func PegarLivroPeloId(id int) (modelos.Livro, bool) {
 	conexao := PegarConexao()
 	var livro modelos.Livro
-	textoQuery := "select id_livro, isbn, titulo, to_char(ano_publicacao, 'yyyy-mm-dd'), editora, pais from livro where id_livro = $1"
+	textoQuery := "select id_livro, isbn, titulo, ano_publicacao, editora, pais from livro where id_livro = $1"
 	if erro := conexao.QueryRow(context.Background(), textoQuery, id).Scan(
 		&livro.IdDoLivro,
 		&livro.Isbn,
