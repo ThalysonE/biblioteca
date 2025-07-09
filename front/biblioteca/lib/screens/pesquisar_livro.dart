@@ -255,13 +255,13 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   "Pesquisa De Livro",
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: const Color.fromRGBO(38, 42, 79, 1),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 28,
-                      ),
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 28,
+                  ),
                 ),
                 const SizedBox(height: 40),
                 Row(
@@ -420,7 +420,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                 children: [
                                   // ISBN
                                   Padding(
-                                    padding: EdgeInsets.all(8.0),
+                                    padding: const EdgeInsets.all(8.0),
                                     child: InkWell(
                                       onTap: () {
                                         setState(() {
@@ -789,7 +789,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                   children: [
                                     const Icon(
                                       Icons.book,
-                                      color: Color.fromRGBO(38, 42, 79, 1),
+                                      color: Colors.black,
                                       size: 23,
                                     ),
                                     const SizedBox(
@@ -803,8 +803,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                           .copyWith(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 20.3,
-                                            color:
-                                                Color.fromRGBO(38, 42, 79, 1),
+                                            color: Colors.black,
                                           ),
                                     ),
                                   ],
@@ -996,7 +995,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                               children: [
                                 const Icon(
                                   Icons.library_books,
-                                  color: Color.fromRGBO(38, 42, 79, 1),
+                                  color: Colors.black,
                                   size: 24,
                                 ),
                                 const SizedBox(
@@ -1010,7 +1009,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                                       .copyWith(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 20.3,
-                                        color: Color.fromRGBO(38, 42, 79, 1),
+                                        color: Colors.black,
                                       ),
                                   textAlign: TextAlign.center,
                                 ),
