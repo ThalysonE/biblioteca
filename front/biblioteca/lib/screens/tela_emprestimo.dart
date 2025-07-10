@@ -4,6 +4,7 @@ import 'package:biblioteca/data/models/usuario_model.dart';
 import 'package:biblioteca/data/providers/emprestimo_provider.dart';
 import 'package:biblioteca/data/providers/exemplares_provider.dart';
 import 'package:biblioteca/data/providers/usuario_provider.dart';
+import 'package:biblioteca/widgets/tables/history_table.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca/widgets/navegacao/bread_crumb.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,16 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
   late List<Exemplar> selectedBoxExemplar = [];
 
   late List<EmprestimosModel> emprestimos = [];
+
+  int rowsPerPageUsers = 10;
+  final List<int> rowsPerPageOptionsUsers = [5, 10, 15, 20];
+  int currentPageUsers = 1;
+  String _tableFilterTextUsers = '';
+  final TextEditingController _tableFilterControllerUsers =
+      TextEditingController();
+  String _sortColumnUsers = 'nome'; // 'nome', 'turma', 'turno', 'email', 'tipo'
+  bool _isAscendingUsers = true;
+
   @override
   void initState() {
     super.initState();
@@ -49,22 +60,25 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
       });
     }
   }
-  scafoldMsg(String msg, int tipo){
-    return ScaffoldMessenger.of(context).showSnackBar( SnackBar(
-            backgroundColor: tipo == 1? Colors.red: (tipo ==2)? Colors.orange: Colors.green,
-            content: Text(
-              msg,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            duration: const Duration(seconds: 2),
-          ));
+
+  scafoldMsg(String msg, int tipo) {
+    return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: tipo == 1
+          ? Colors.red
+          : (tipo == 2)
+              ? Colors.orange
+              : Colors.green,
+      content: Text(
+        msg,
+        style: const TextStyle(
+            color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
+      ),
+      duration: const Duration(seconds: 2),
+    ));
   }
-  
-   void searchUsers() async{
+
+  void searchUsers() async {
     final searchQuery = _searchController.text.toLowerCase();
     if (showSearchBooks) {
       selectUser = null;
@@ -72,20 +86,22 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
       showSearchBooks = false;
       selectbook = null;
       _searchControllerBooks.text = '';
-      setState(() {
-        
-      });
+      setState(() {});
     }
-    if(searchQuery.isNotEmpty){
-      try{
-        final resposta = await Provider.of<UsuarioProvider>(context, listen: false).searchUsuarios(searchQuery);
+    if (searchQuery.isNotEmpty) {
+      try {
+        final resposta =
+            await Provider.of<UsuarioProvider>(context, listen: false)
+                .searchUsuarios(searchQuery);
         setState(() {
           search = true;
           _filteredUsers = resposta;
         });
-      }catch(e){
+      } catch (e) {
         print(e.toString());
-        scafoldMsg('Erro ao realizar a pesquisa de usuários. Tente novamente mais tarde.', 1);
+        scafoldMsg(
+            'Erro ao realizar a pesquisa de usuários. Tente novamente mais tarde.',
+            1);
       }
     }
   }
@@ -112,12 +128,12 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
         }
 
         if (selectbook != null) {
-          
-          if (emprestimos
-              .any((e) => e.exemplarMap['IdDoExemplarLivro'] == selectbook!.id)) {
+          if (emprestimos.any(
+              (e) => e.exemplarMap['IdDoExemplarLivro'] == selectbook!.id)) {
             scafoldMsg('Exemplar já emprestado para o aluno!', 1);
           } else if (!selectedBoxExemplar.contains(selectbook)) {
-            if (selectbook!.statusCodigo != 1) { //mudar isso aqui dps para (selectbook!.statusCodigo != 1) pq a api da com bug de definir o status de todos os exemplares como 0
+            if (selectbook!.statusCodigo != 1) {
+              //mudar isso aqui dps para (selectbook!.statusCodigo != 1) pq a api da com bug de definir o status de todos os exemplares como 0
               msgIndisponivel(selectbook!);
             } else {
               setState(() {
@@ -154,8 +170,8 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                       color: const Color.fromARGB(215, 200, 200, 200)),
                   children: [
                     const TableRow(
-                        decoration: BoxDecoration(
-                            color: Color.fromARGB(255, 44, 62, 80)),
+                        decoration:
+                            BoxDecoration(color: Color.fromRGBO(38, 42, 79, 1)),
                         children: [
                           Padding(
                             padding: EdgeInsets.all(8.0),
@@ -214,8 +230,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                           ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              '${exemplar.anoPublicacao}',
+                            child: Text('${exemplar.anoPublicacao}',
                                 // DateFormat('dd/MM/YYYY')
                                 //     .format(exemplar.anoPublicacao),
                                 textAlign: TextAlign.center,
@@ -252,7 +267,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                   children: [
                     TextButton(
                         style: TextButton.styleFrom(
-                            padding:const EdgeInsets.all(11),
+                            padding: const EdgeInsets.all(11),
                             backgroundColor: Colors.red[400],
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
@@ -291,14 +306,18 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
             ));
   }
 
-  Future<void> msgConfirmEmprestimo(List<emprestimoMsg> exemplaresEmpres, int tipoMsg) {
+  Future<void> msgConfirmEmprestimo(
+      List<emprestimoMsg> exemplaresEmpres, int tipoMsg) {
     return showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              title:  Text(
-                tipoMsg == 0? 'Confirmação de Empréstimo':'Confimação de Renovação',
+              title: Text(
+                tipoMsg == 0
+                    ? 'Confirmação de Empréstimo'
+                    : 'Confimação de Renovação',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
               content: Container(
                 width: 800,
@@ -313,8 +332,8 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                       color: const Color.fromARGB(215, 200, 200, 200)),
                   children: [
                     const TableRow(
-                        decoration: BoxDecoration(
-                            color: Color.fromARGB(255, 44, 62, 80)),
+                        decoration:
+                            BoxDecoration(color: Color.fromRGBO(38, 42, 79, 1)),
                         children: [
                           Padding(
                             padding: EdgeInsets.all(8.0),
@@ -376,8 +395,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                  exemplar.dataPrevistaEntrega,
+                              child: Text(exemplar.dataPrevistaEntrega,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w300,
@@ -385,12 +403,21 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text(tipoMsg == 0? 'Empréstimo realizado!': (exemplar.renovou)? 'Renovação realizada!': 'Limite Máximo de Renovação Atingido',
+                              child: Text(
+                                  tipoMsg == 0
+                                      ? 'Empréstimo realizado!'
+                                      : (exemplar.renovou)
+                                          ? 'Renovação realizada!'
+                                          : 'Limite Máximo de Renovação Atingido',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       fontWeight: FontWeight.w300,
                                       fontSize: 14,
-                                      color: tipoMsg == 0? Colors.green[400]: exemplar.renovou? Colors.green[400]:Colors.red[400])),
+                                      color: tipoMsg == 0
+                                          ? Colors.green[400]
+                                          : exemplar.renovou
+                                              ? Colors.green[400]
+                                              : Colors.red[400])),
                             )
                           ])
                   ],
@@ -426,58 +453,150 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
     return dataDevolucao;
   }
 
-  Future<void> renovarExemplares(List<EmprestimosModel> emprestimosRenov) async{
+  Future<void> renovarExemplares(
+      List<EmprestimosModel> emprestimosRenov) async {
     final copia = List.from(emprestimosRenov);
     List<emprestimoMsg> listaRenovacao = [];
-    for(EmprestimosModel emprestimo in emprestimosRenov){
-      listaRenovacao.add(emprestimoMsg(tombamento: emprestimo.exemplarMap['IdDoExemplarLivro'].toString(), nome: emprestimo.exemplarMap['Livro']['Titulo'], dataPrevistaEntrega: emprestimo.formatarData(1)));
+    for (EmprestimosModel emprestimo in emprestimosRenov) {
+      listaRenovacao.add(emprestimoMsg(
+          tombamento: emprestimo.exemplarMap['IdDoExemplarLivro'].toString(),
+          nome: emprestimo.exemplarMap['Livro']['Titulo'],
+          dataPrevistaEntrega: emprestimo.formatarData(1)));
     }
-    for(final item in copia){
-      var status = await Provider.of<EmprestimoProvider>(context, listen: false).renovacao(item.IdDoEmprestimo);
-      final exemplarRenov = listaRenovacao.firstWhere((exemplar)=> exemplar.tombamento == item.exemplarMap['IdDoExemplarLivro'].toString());
-      if(status == 200){
+    for (final item in copia) {
+      var status = await Provider.of<EmprestimoProvider>(context, listen: false)
+          .renovacao(item.IdDoEmprestimo);
+      final exemplarRenov = listaRenovacao.firstWhere((exemplar) =>
+          exemplar.tombamento ==
+          item.exemplarMap['IdDoExemplarLivro'].toString());
+      if (status == 200) {
         exemplarRenov.renovou = true;
-        exemplarRenov.dataPrevistaEntrega = dataPrevistaDevolucao(DateFormat('dd/MM/yyyy').parse(exemplarRenov.dataPrevistaEntrega));
-      }else{
+        exemplarRenov.dataPrevistaEntrega = dataPrevistaDevolucao(
+            DateFormat('dd/MM/yyyy').parse(exemplarRenov.dataPrevistaEntrega));
+      } else {
         exemplarRenov.renovou = false;
       }
     }
-    
+
     msgConfirmEmprestimo(listaRenovacao, 1);
     carregarEmprestimosUsuario(selectUser!.idDoUsuario);
-    
   }
 
-  void carregarEmprestimosUsuario(int idUsuario) async{
-    emprestimos = await Provider.of<EmprestimoProvider>(context, listen:  false).fetchEmprestimoEmAndamentoUsuarios(idUsuario);
-    setState(() {
-    });
+  void carregarEmprestimosUsuario(int idUsuario) async {
+    emprestimos = await Provider.of<EmprestimoProvider>(context, listen: false)
+        .fetchEmprestimoEmAndamentoUsuarios(idUsuario);
+    setState(() {});
   }
-  
-  void realizarEmprestimo(List<Exemplar> exemplaresParaEmprestar) async{
+
+  void realizarEmprestimo(List<Exemplar> exemplaresParaEmprestar) async {
     List<int> listaIdsExemplares = [];
-    for(Exemplar item in exemplaresParaEmprestar){
+    for (Exemplar item in exemplaresParaEmprestar) {
       listaIdsExemplares.add(item.id);
     }
-    final statusCode = await Provider.of<EmprestimoProvider>(context,listen: false).addEmprestimo(selectUser!.idDoUsuario, listaIdsExemplares);
+    final statusCode =
+        await Provider.of<EmprestimoProvider>(context, listen: false)
+            .addEmprestimo(selectUser!.idDoUsuario, listaIdsExemplares);
 
-    if(statusCode == 200){
+    if (statusCode == 200) {
       List<emprestimoMsg> listaEmprestados = [];
-      for (Exemplar item in exemplaresParaEmprestar){
-        listaEmprestados.add(emprestimoMsg(tombamento: item.id.toString(), nome: item.titulo, dataPrevistaEntrega: dataPrevistaDevolucao(DateTime.now())));
+      for (Exemplar item in exemplaresParaEmprestar) {
+        listaEmprestados.add(emprestimoMsg(
+            tombamento: item.id.toString(),
+            nome: item.titulo,
+            dataPrevistaEntrega: dataPrevistaDevolucao(DateTime.now())));
       }
       msgConfirmEmprestimo(listaEmprestados, 0);
       carregarEmprestimosUsuario(selectUser!.idDoUsuario);
-      
-    }else{
-      scafoldMsg('Erro ao tentar realizar o emprestimo, tente novamente mais tarde!', 1);
+    } else {
+      scafoldMsg(
+          'Erro ao tentar realizar o emprestimo, tente novamente mais tarde!',
+          1);
     }
   }
+
+  void _abrirHistoricoUsuario(Usuario usuario) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HistoryTablePage(
+          usuario: usuario,
+          ultimaPagina: "Empréstimo",
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
     _searchControllerBooks.dispose();
+    _tableFilterControllerUsers.dispose();
     super.dispose();
+  }
+
+  List<Usuario> _getPaginatedUsers() {
+    // Filtra os usuários com base no texto da tabela
+    List<Usuario> filtered = _filteredUsers.where((user) {
+      final nome = user.nome.toLowerCase();
+      final turma = user.getTurma.toLowerCase();
+      final turno = user.getTurno.toLowerCase();
+      final email = user.email.toLowerCase();
+      final tipo = user.getTipoDeUsuario.toLowerCase();
+      final filter = _tableFilterTextUsers.toLowerCase();
+
+      return nome.contains(filter) ||
+          turma.contains(filter) ||
+          turno.contains(filter) ||
+          email.contains(filter) ||
+          tipo.contains(filter);
+    }).toList();
+
+    // Ordena os usuários com base na coluna e ordem selecionadas
+    filtered.sort((a, b) {
+      int res = 0;
+      if (_sortColumnUsers == 'nome') {
+        res = a.nome.compareTo(b.nome);
+      } else if (_sortColumnUsers == 'turma') {
+        res = a.getTurma.compareTo(b.getTurma);
+      } else if (_sortColumnUsers == 'turno') {
+        res = a.getTurno.compareTo(b.getTurno);
+      } else if (_sortColumnUsers == 'email') {
+        res = a.email.compareTo(b.email);
+      } else if (_sortColumnUsers == 'tipo') {
+        res = a.getTipoDeUsuario.compareTo(b.getTipoDeUsuario);
+      }
+
+      return _isAscendingUsers ? res : -res;
+    });
+
+    // Pagina os resultados
+    int start = (currentPageUsers - 1) * rowsPerPageUsers;
+    int end = start + rowsPerPageUsers;
+    return filtered.sublist(
+        start, end > filtered.length ? filtered.length : end);
+  }
+
+  int _getTotalPagesUsers() {
+    // Retorna o número total de páginas com base na quantidade de usuários filtrados
+    int totalFiltered = _filteredUsers
+        .where((user) {
+          final nome = user.nome.toLowerCase();
+          final turma = user.getTurma.toLowerCase();
+          final turno = user.getTurno.toLowerCase();
+          final email = user.email.toLowerCase();
+          final tipo = user.getTipoDeUsuario.toLowerCase();
+          final filter = _tableFilterTextUsers.toLowerCase();
+
+          return nome.contains(filter) ||
+              turma.contains(filter) ||
+              turno.contains(filter) ||
+              email.contains(filter) ||
+              tipo.contains(filter);
+        })
+        .toList()
+        .length;
+
+    return (totalFiltered / rowsPerPageUsers).ceil();
   }
 
   @override
@@ -567,166 +686,471 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                         if (selectUser == null)
                           ConstrainedBox(
                             constraints: const BoxConstraints(
-                                maxWidth: 1210, minHeight: 800),
-                            child: Table(
-                              border: TableBorder.all(
-                                  color:
-                                      const Color.fromARGB(215, 200, 200, 200)),
-                              columnWidths: const {
-                                0: FlexColumnWidth(0.42),
-                                1: FlexColumnWidth(0.18),
-                                2: FlexColumnWidth(0.18),
-                                3: FlexColumnWidth(0.36),
-                                4: FlexColumnWidth(0.17),
-                                5: FlexColumnWidth(0.20),
-                              },
+                                maxWidth: 1210, minWidth: 800),
+                            child: Column(
                               children: [
-                                const TableRow(
-                                  decoration: BoxDecoration(
-                                      color: Color.fromARGB(255, 44, 62, 80)),
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text('Nome',
-                                          textAlign: TextAlign.left,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15)),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text('Turma',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15)),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text('Turno',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15)),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text('Email',
-                                          textAlign: TextAlign.left,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15)),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text('Tipo Usuário',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15)),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text('Ação',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15)),
-                                    )
-                                  ],
-                                ),
-                                for (int x = 0; x < _filteredUsers.length; x++)
-                                  TableRow(
-                                    decoration: BoxDecoration(
-                                        color: x % 2 == 0
-                                            ? const Color.fromRGBO(233, 235, 238, 75)
-                                            : const Color.fromRGBO(255, 255, 255, 1)),
+                                // Filtro e seleção de registros por página
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: 16.0, top: 8.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 13, horizontal: 8),
-                                        child: Text(_filteredUsers[x].nome,
-                                            textAlign: TextAlign.left,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w300,
-                                                fontSize: 14.5)),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 13, horizontal: 8),
-                                        child: Text(_filteredUsers[x].getTurma,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w300,
-                                                fontSize: 14.5)),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 13, horizontal: 8),
-                                        child: Text(_filteredUsers[x].getTurno,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w300,
-                                                fontSize: 14.5)),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 13, horizontal: 8),
-                                        child: Text(_filteredUsers[x].email,
-                                            textAlign: TextAlign.left,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w300,
-                                                fontSize: 14.5)),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 13, horizontal: 8),
-                                        child: Text(
-                                            _filteredUsers[x].getTipoDeUsuario,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w300,
-                                                fontSize: 14.5)),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 10,
-                                          horizontal: 14,
-                                        ),
-                                        child: TextButton(
-                                          style: TextButton.styleFrom(
-                                            backgroundColor:
-                                                const Color.fromARGB(
-                                                    255, 45, 106, 79),
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(7)),
+                                      // Registros por página
+                                      Row(
+                                        children: [
+                                          const Text('Exibir'),
+                                          const SizedBox(width: 8),
+                                          DropdownButton<int>(
+                                            value: rowsPerPageUsers,
+                                            onChanged: (value) {
+                                              if (value != null) {
+                                                setState(() {
+                                                  rowsPerPageUsers = value;
+                                                  currentPageUsers = 1;
+                                                });
+                                              }
+                                            },
+                                            items: rowsPerPageOptionsUsers
+                                                .map((int value) {
+                                              return DropdownMenuItem<int>(
+                                                  value: value,
+                                                  child:
+                                                      Text(value.toString()));
+                                            }).toList(),
                                           ),
-                                          onPressed: () {
-                                            showSearchBooks = true;
+                                          const SizedBox(width: 8),
+                                          const Text('registros por página'),
+                                        ],
+                                      ),
+                                      // Campo de filtro
+                                      SizedBox(
+                                        width: 300,
+                                        child: TextField(
+                                          controller:
+                                              _tableFilterControllerUsers,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Pesquisar',
+                                            prefixIcon: Icon(Icons.search),
+                                            border: OutlineInputBorder(),
+                                            isDense: true,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    vertical: 10,
+                                                    horizontal: 12),
+                                          ),
+                                          onChanged: (value) {
                                             setState(() {
-                                              selectUser = _filteredUsers[x];
-                                              carregarEmprestimosUsuario(_filteredUsers[x].idDoUsuario);
+                                              _tableFilterTextUsers =
+                                                  value.toLowerCase();
+                                              currentPageUsers = 1;
                                             });
                                           },
-                                          child: const Text('Selecionar',
-                                              style: TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 250, 244, 244),
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 14,
-                                              ),
-                                              textAlign: TextAlign.center),
                                         ),
                                       ),
                                     ],
                                   ),
+                                ),
+                                // Tabela com ordenação
+                                Table(
+                                  border: TableBorder.all(
+                                      color: const Color.fromARGB(
+                                          215, 200, 200, 200)),
+                                  columnWidths: const {
+                                    0: FlexColumnWidth(0.42),
+                                    1: FlexColumnWidth(0.18),
+                                    2: FlexColumnWidth(0.18),
+                                    3: FlexColumnWidth(0.36),
+                                    4: FlexColumnWidth(0.17),
+                                    5: FlexColumnWidth(0.20),
+                                  },
+                                  children: [
+                                    TableRow(
+                                      decoration: const BoxDecoration(
+                                          color: Color.fromRGBO(38, 42, 79, 1)),
+                                      children: [
+                                        // Nome - Ordenável
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: InkWell(
+                                            onTap: () {
+                                              setState(() {
+                                                if (_sortColumnUsers ==
+                                                    'nome') {
+                                                  _isAscendingUsers =
+                                                      !_isAscendingUsers;
+                                                } else {
+                                                  _sortColumnUsers = 'nome';
+                                                  _isAscendingUsers = true;
+                                                }
+                                              });
+                                            },
+                                            child: Row(
+                                              children: [
+                                                const Text('Nome',
+                                                    textAlign: TextAlign.left,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.white,
+                                                        fontSize: 15)),
+                                                Icon(
+                                                  _sortColumnUsers == 'nome'
+                                                      ? (_isAscendingUsers
+                                                          ? Icons.arrow_upward
+                                                          : Icons
+                                                              .arrow_downward)
+                                                      : Icons.unfold_more,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        // Turma - Ordenável
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: InkWell(
+                                            onTap: () {
+                                              setState(() {
+                                                if (_sortColumnUsers ==
+                                                    'turma') {
+                                                  _isAscendingUsers =
+                                                      !_isAscendingUsers;
+                                                } else {
+                                                  _sortColumnUsers = 'turma';
+                                                  _isAscendingUsers = true;
+                                                }
+                                              });
+                                            },
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                const Text('Turma',
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.white,
+                                                        fontSize: 15)),
+                                                Icon(
+                                                  _sortColumnUsers == 'turma'
+                                                      ? (_isAscendingUsers
+                                                          ? Icons.arrow_upward
+                                                          : Icons
+                                                              .arrow_downward)
+                                                      : Icons.unfold_more,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        // Turno - Ordenável
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: InkWell(
+                                            onTap: () {
+                                              setState(() {
+                                                if (_sortColumnUsers ==
+                                                    'turno') {
+                                                  _isAscendingUsers =
+                                                      !_isAscendingUsers;
+                                                } else {
+                                                  _sortColumnUsers = 'turno';
+                                                  _isAscendingUsers = true;
+                                                }
+                                              });
+                                            },
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                const Text('Turno',
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.white,
+                                                        fontSize: 15)),
+                                                Icon(
+                                                  _sortColumnUsers == 'turno'
+                                                      ? (_isAscendingUsers
+                                                          ? Icons.arrow_upward
+                                                          : Icons
+                                                              .arrow_downward)
+                                                      : Icons.unfold_more,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        // Email - Ordenável
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: InkWell(
+                                            onTap: () {
+                                              setState(() {
+                                                if (_sortColumnUsers ==
+                                                    'email') {
+                                                  _isAscendingUsers =
+                                                      !_isAscendingUsers;
+                                                } else {
+                                                  _sortColumnUsers = 'email';
+                                                  _isAscendingUsers = true;
+                                                }
+                                              });
+                                            },
+                                            child: Row(
+                                              children: [
+                                                const Text('Email',
+                                                    textAlign: TextAlign.left,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.white,
+                                                        fontSize: 15)),
+                                                Icon(
+                                                  _sortColumnUsers == 'email'
+                                                      ? (_isAscendingUsers
+                                                          ? Icons.arrow_upward
+                                                          : Icons
+                                                              .arrow_downward)
+                                                      : Icons.unfold_more,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        // Tipo Usuário - Ordenável
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: InkWell(
+                                            onTap: () {
+                                              setState(() {
+                                                if (_sortColumnUsers ==
+                                                    'tipo') {
+                                                  _isAscendingUsers =
+                                                      !_isAscendingUsers;
+                                                } else {
+                                                  _sortColumnUsers = 'tipo';
+                                                  _isAscendingUsers = true;
+                                                }
+                                              });
+                                            },
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                const Text('Tipo Usuário',
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.white,
+                                                        fontSize: 15)),
+                                                Icon(
+                                                  _sortColumnUsers == 'tipo'
+                                                      ? (_isAscendingUsers
+                                                          ? Icons.arrow_upward
+                                                          : Icons
+                                                              .arrow_downward)
+                                                      : Icons.unfold_more,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        // Ação (não ordenável)
+                                        const Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Text('Ação',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.white,
+                                                  fontSize: 15)),
+                                        ),
+                                      ],
+                                    ),
+                                    // Linhas de dados paginadas
+                                    for (int x = 0;
+                                        x < _getPaginatedUsers().length;
+                                        x++)
+                                      TableRow(
+                                        decoration: BoxDecoration(
+                                            color: x % 2 == 0
+                                                ? const Color.fromRGBO(
+                                                    233, 235, 238, 75)
+                                                : const Color.fromRGBO(
+                                                    255, 255, 255, 1)),
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 13, horizontal: 8),
+                                            child: Text(
+                                                _getPaginatedUsers()[x].nome,
+                                                textAlign: TextAlign.left,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 14.5)),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 13, horizontal: 8),
+                                            child: Text(
+                                                _getPaginatedUsers()[x]
+                                                    .getTurma,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 14.5)),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 13, horizontal: 8),
+                                            child: Text(
+                                                _getPaginatedUsers()[x]
+                                                    .getTurno,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 14.5)),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 13, horizontal: 8),
+                                            child: Text(
+                                                _getPaginatedUsers()[x].email,
+                                                textAlign: TextAlign.left,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 14.5)),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 13, horizontal: 8),
+                                            child: Text(
+                                                _getPaginatedUsers()[x]
+                                                    .getTipoDeUsuario,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 14.5)),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 10,
+                                              horizontal: 14,
+                                            ),
+                                            child: TextButton(
+                                              style: TextButton.styleFrom(
+                                                backgroundColor:
+                                                    const Color.fromARGB(
+                                                        255, 45, 106, 79),
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            7)),
+                                              ),
+                                              onPressed: () {
+                                                showSearchBooks = true;
+                                                setState(() {
+                                                  selectUser =
+                                                      _getPaginatedUsers()[x];
+                                                  carregarEmprestimosUsuario(
+                                                      _getPaginatedUsers()[x]
+                                                          .idDoUsuario);
+                                                });
+                                              },
+                                              child: const Text('Selecionar',
+                                                  style: TextStyle(
+                                                    color: Color.fromARGB(
+                                                        255, 250, 244, 244),
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 14,
+                                                  ),
+                                                  textAlign: TextAlign.center),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                  ],
+                                ),
+                                // Paginação
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.chevron_left),
+                                        onPressed: currentPageUsers > 1
+                                            ? () {
+                                                setState(() {
+                                                  currentPageUsers--;
+                                                });
+                                              }
+                                            : null,
+                                      ),
+                                      for (int i = 1;
+                                          i <= _getTotalPagesUsers();
+                                          i++)
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              currentPageUsers = i;
+                                            });
+                                          },
+                                          child: Container(
+                                            margin: const EdgeInsets.symmetric(
+                                                horizontal: 4.0),
+                                            padding: const EdgeInsets.all(8.0),
+                                            decoration: BoxDecoration(
+                                              color: i == currentPageUsers
+                                                  ? const Color.fromARGB(
+                                                      255, 38, 42, 79)
+                                                  : Colors.transparent,
+                                              borderRadius:
+                                                  BorderRadius.circular(4.0),
+                                              border: Border.all(
+                                                  color: Colors.grey),
+                                            ),
+                                            child: Text(
+                                              i.toString(),
+                                              style: TextStyle(
+                                                color: i == currentPageUsers
+                                                    ? Colors.white
+                                                    : Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      IconButton(
+                                        icon: const Icon(Icons.chevron_right),
+                                        onPressed: currentPageUsers <
+                                                _getTotalPagesUsers()
+                                            ? () {
+                                                setState(() {
+                                                  currentPageUsers++;
+                                                });
+                                              }
+                                            : null,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -736,216 +1160,229 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  width: double.infinity,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 6.5),
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(230, 227, 242, 253),
-                                    borderRadius: BorderRadius.circular(8),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 4,
-                                        spreadRadius: 1,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 10, left: 8, right: 8, bottom: 16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 4),
-                                          child: Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.person,
-                                                color: Color.fromARGB(
-                                                    255, 46, 125, 50),
-                                                size: 26,
-                                              ),
-                                              const SizedBox(
-                                                width: 7,
-                                              ),
-                                              Text(
-                                                "Usuário Selecionado",
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .labelMedium!
-                                                    .copyWith(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 21,
-                                                      color: Colors.black,
-                                                    ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ],
+                                // Remova todo o Container com decoração azulada e substitua por:
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.person,
+                                            color: Colors.black,
+                                            size: 23,
                                           ),
-                                        ),
-                                        Divider(
-                                            thickness: 2,
-                                            color: Colors.grey[400]),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        Table(
-                                          border: TableBorder.all(
-                                              color: const Color.fromARGB(
-                                                  215, 200, 200, 200)),
-                                          columnWidths: const {
-                                            0: FlexColumnWidth(0.50),
-                                            1: FlexColumnWidth(0.15),
-                                            2: FlexColumnWidth(0.15),
-                                            3: FlexColumnWidth(0.35),
-                                            4: FlexColumnWidth(0.15),
-                                          },
+                                          const SizedBox(
+                                            width: 8,
+                                          ),
+                                          Text(
+                                            "Usuário Selecionado",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelMedium!
+                                                .copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 20.3,
+                                                  color: Colors.black,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Divider(
+                                        thickness: 2, color: Colors.grey[400]),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    Table(
+                                      border: TableBorder.all(
+                                        color: const Color.fromARGB(
+                                            215, 200, 200, 200),
+                                      ),
+                                      columnWidths: const {
+                                        0: FlexColumnWidth(0.08), // Ação
+                                        1: FlexColumnWidth(0.42), // Nome
+                                        2: FlexColumnWidth(0.15), // Turma
+                                        3: FlexColumnWidth(0.15), // Turno
+                                        4: FlexColumnWidth(0.32), // Email
+                                        5: FlexColumnWidth(
+                                            0.15), // Tipo Usuário
+                                      },
+                                      children: [
+                                        const TableRow(
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Color.fromRGBO(38, 42, 79, 1),
+                                          ),
                                           children: [
-                                            const TableRow(
-                                              decoration: BoxDecoration(
-                                                  color: Color.fromARGB(
-                                                      255, 44, 62, 80)),
-                                              children: [
-                                                Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Text('Nome',
-                                                      textAlign: TextAlign.left,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.white,
-                                                          fontSize: 15)),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Text('Turma',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.white,
-                                                          fontSize: 15)),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Text('Turno',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.white,
-                                                          fontSize: 15)),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Text('Email',
-                                                      textAlign: TextAlign.left,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.white,
-                                                          fontSize: 15)),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Text('Tipo Usuário',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors.white,
-                                                          fontSize: 15)),
-                                                ),
-                                              ],
+                                            Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Text(
+                                                'Ação',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.white,
+                                                    fontSize: 15),
+                                              ),
                                             ),
-                                            TableRow(
-                                              decoration: const BoxDecoration(
-                                                  color: Color.fromRGBO(
-                                                      233, 235, 238, 75)),
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
+                                            Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Text(
+                                                'Nome',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.white,
+                                                    fontSize: 15),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Text(
+                                                'Turma',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.white,
+                                                    fontSize: 15),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Text(
+                                                'Turno',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.white,
+                                                    fontSize: 15),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Text(
+                                                'Email',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.white,
+                                                    fontSize: 15),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Text(
+                                                'Tipo Usuário',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.white,
+                                                    fontSize: 15),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        TableRow(
+                                          decoration: const BoxDecoration(
+                                            color: Color.fromRGBO(
+                                                233, 235, 238, 75),
+                                          ),
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                       vertical: 10,
                                                       horizontal: 8),
-                                                  child: Text(selectUser!.nome,
-                                                      textAlign: TextAlign.left,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 14.5)),
+                                              child: IconButton(
+                                                icon: const Icon(Icons.history),
+                                                tooltip:
+                                                    'Ver histórico do usuário',
+                                                iconSize: 18,
+                                                constraints:
+                                                    const BoxConstraints(
+                                                  minWidth: 25,
+                                                  minHeight: 25,
                                                 ),
-                                                Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
+                                                onPressed: () =>
+                                                    _abrirHistoricoUsuario(
+                                                        selectUser!),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                       vertical: 10,
                                                       horizontal: 8),
-                                                  child: Text(
-                                                      selectUser!.getTurma,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 14.5)),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
+                                              child: Text(
+                                                selectUser!.nome,
+                                                textAlign: TextAlign.left,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 14.5),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                       vertical: 10,
                                                       horizontal: 8),
-                                                  child: Text(
-                                                      selectUser!.getTurno,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 14.5)),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
+                                              child: Text(
+                                                selectUser!.getTurma,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 14.5),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                       vertical: 10,
                                                       horizontal: 8),
-                                                  child: Text(selectUser!.email,
-                                                      textAlign: TextAlign.left,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 14.5)),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                      selectUser!
-                                                          .getTipoDeUsuario,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 14.5)),
-                                                ),
-                                              ],
+                                              child: Text(
+                                                selectUser!.getTurno,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 14.5),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 10,
+                                                      horizontal: 8),
+                                              child: Text(
+                                                selectUser!.email,
+                                                textAlign: TextAlign.left,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 14.5),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 10,
+                                                      horizontal: 8),
+                                              child: Text(
+                                                selectUser!.getTipoDeUsuario,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 14.5),
+                                              ),
                                             ),
                                           ],
                                         ),
                                       ],
                                     ),
-                                  ),
+                                  ],
                                 ),
-                                if (selectUser != null &&emprestimos.isNotEmpty )
+                                if (selectUser != null &&
+                                    emprestimos.isNotEmpty)
                                   Column(
                                     children: [
                                       const SizedBox(height: 60),
@@ -955,8 +1392,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                           children: [
                                             const Icon(
                                               Icons.library_books,
-                                              color: Color.fromARGB(
-                                                  255, 46, 125, 50),
+                                              color: Colors.black,
                                               size: 25,
                                             ),
                                             const SizedBox(
@@ -979,7 +1415,8 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                       ),
                                     ],
                                   ),
-                                if (selectUser != null &&emprestimos.isNotEmpty)
+                                if (selectUser != null &&
+                                    emprestimos.isNotEmpty)
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
@@ -1002,8 +1439,8 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                         children: [
                                           const TableRow(
                                               decoration: BoxDecoration(
-                                                color: Color.fromARGB(
-                                                    255, 44, 62, 80),
+                                                color: Color.fromRGBO(
+                                                    38, 42, 79, 1),
                                               ),
                                               children: [
                                                 Padding(
@@ -1042,7 +1479,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                 Padding(
                                                   padding: EdgeInsets.all(7.0),
                                                   child: Text(
-                                                      'Previsão Devoluçao',
+                                                      'Previsão Devolução',
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
@@ -1064,8 +1501,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                 ),
                                               ]),
                                           for (int x = 0;
-                                              x <
-                                                  emprestimos.length;
+                                              x < emprestimos.length;
                                               x++)
                                             TableRow(
                                                 decoration: BoxDecoration(
@@ -1082,7 +1518,10 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                         vertical: 9.4,
                                                         horizontal: 8),
                                                     child: Text(
-                                                        emprestimos[x].exemplarMap['IdDoExemplarLivro'].toString(),
+                                                        emprestimos[x]
+                                                            .exemplarMap[
+                                                                'IdDoExemplarLivro']
+                                                            .toString(),
                                                         textAlign:
                                                             TextAlign.center,
                                                         style: const TextStyle(
@@ -1096,7 +1535,9 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                         vertical: 9.4,
                                                         horizontal: 8),
                                                     child: Text(
-                                                        emprestimos[x].exemplarMap['Livro']['Titulo'],
+                                                        emprestimos[x]
+                                                                .exemplarMap[
+                                                            'Livro']['Titulo'],
                                                         textAlign:
                                                             TextAlign.left,
                                                         style: const TextStyle(
@@ -1110,7 +1551,8 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                         vertical: 9.4,
                                                         horizontal: 8),
                                                     child: Text(
-                                                        emprestimos[x].formatarData(0),
+                                                        emprestimos[x]
+                                                            .formatarData(0),
                                                         textAlign:
                                                             TextAlign.center,
                                                         style: const TextStyle(
@@ -1124,7 +1566,8 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                         vertical: 9.4,
                                                         horizontal: 8),
                                                     child: Text(
-                                                        emprestimos[x].formatarData(1),
+                                                        emprestimos[x]
+                                                            .formatarData(1),
                                                         textAlign:
                                                             TextAlign.center,
                                                         style: const TextStyle(
@@ -1139,14 +1582,15 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                         horizontal: 37,
                                                       ),
                                                       child: Checkbox(
-                                                           value: emprestimos[x].selecionadoRenov,
-                                                           onChanged: (value) {
-                                                             setState(() {
-                                                                       emprestimos[x].selecionadoRenov=
-                                                                   value as bool;
-                                                             });
-                                                           }
-                                                          ))
+                                                          value: emprestimos[x]
+                                                              .selecionadoRenov,
+                                                          onChanged: (value) {
+                                                            setState(() {
+                                                              emprestimos[x]
+                                                                      .selecionadoRenov =
+                                                                  value as bool;
+                                                            });
+                                                          }))
                                                 ]),
                                         ],
                                       ),
@@ -1190,14 +1634,23 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                                           5)),
                                                     ),
                                                     onPressed: () {
-                                                      List<EmprestimosModel> exemplaresSelecionadosRenovacao = [];
-                                                      for (EmprestimosModel dadosEmprestimo in emprestimos) {
-                                                        if (dadosEmprestimo.selecionadoRenov == true) {
-                                                           exemplaresSelecionadosRenovacao.add(dadosEmprestimo);
+                                                      List<EmprestimosModel>
+                                                          exemplaresSelecionadosRenovacao =
+                                                          [];
+                                                      for (EmprestimosModel dadosEmprestimo
+                                                          in emprestimos) {
+                                                        if (dadosEmprestimo
+                                                                .selecionadoRenov ==
+                                                            true) {
+                                                          exemplaresSelecionadosRenovacao
+                                                              .add(
+                                                                  dadosEmprestimo);
                                                         }
                                                       }
-                                                      if(exemplaresSelecionadosRenovacao.isNotEmpty)
-                                                        renovarExemplares(exemplaresSelecionadosRenovacao);
+                                                      if (exemplaresSelecionadosRenovacao
+                                                          .isNotEmpty)
+                                                        renovarExemplares(
+                                                            exemplaresSelecionadosRenovacao);
                                                     },
                                                     child: const Text('Renovar',
                                                         style: TextStyle(
@@ -1296,7 +1749,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                               const SizedBox(height: 40),
                               if (showBooks)
                                 if (selectedBoxExemplar.isNotEmpty)
-                                    Column(
+                                  Column(
                                     children: [
                                       SizedBox(
                                         width: 1150,
@@ -1319,7 +1772,9 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                                     .circular(
                                                                         8))),
                                                 onPressed: () {
-                                                  List<Exemplar>exemplaresSelecionadosEmprestimo = [];
+                                                  List<Exemplar>
+                                                      exemplaresSelecionadosEmprestimo =
+                                                      [];
                                                   showLivrosEmprestados;
                                                   for (Exemplar exemplar
                                                       in List.from(
@@ -1332,7 +1787,8 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                           .remove(exemplar);
                                                     }
                                                   }
-                                                  realizarEmprestimo(exemplaresSelecionadosEmprestimo);
+                                                  realizarEmprestimo(
+                                                      exemplaresSelecionadosEmprestimo);
                                                 },
                                                 child: const Row(
                                                   children: [
@@ -1426,10 +1882,20 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                           children: [
                                             const TableRow(
                                               decoration: BoxDecoration(
-                                                  color: Color.fromARGB(
-                                                      255, 44, 62, 80)),
+                                                  color: Color.fromRGBO(
+                                                      38, 42, 79, 1)),
                                               children: [
-                                                SizedBox.shrink(),
+                                                Padding(
+                                                  padding: EdgeInsets.all(8.0),
+                                                  child: Text('Ação',
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: Colors.white,
+                                                          fontSize: 15)),
+                                                ),
                                                 Padding(
                                                   padding: EdgeInsets.all(8.0),
                                                   child: Text('Tombamento',
@@ -1558,13 +2024,13 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                             left: 8,
                                                             right: 8),
                                                     child: Text(
-                                                      '${selectedBoxExemplar[x].anoPublicacao}',
+                                                        '${selectedBoxExemplar[x].anoPublicacao}',
                                                         // DateFormat('dd/MM/yyyy').format(
                                                         //     selectedBoxExemplar[x].anoPublicacao
                                                         // ),
                                                         textAlign:
                                                             TextAlign.center,
-                                                        style:const TextStyle(
+                                                        style: const TextStyle(
                                                             fontWeight:
                                                                 FontWeight.w300,
                                                             fontSize: 14.5)),

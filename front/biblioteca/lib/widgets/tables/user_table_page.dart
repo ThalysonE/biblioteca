@@ -653,7 +653,7 @@ class UserTablePageState extends State<UserTablePage> {
                                     child: const Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.library_books_rounded,
+                                        Icon(Icons.history,
                                             color: Colors.white),
                                         SizedBox(width: 4),
                                         Text('Histórico',

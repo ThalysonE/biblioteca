@@ -7,8 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class HistoryTablePage extends StatefulWidget {
-  const HistoryTablePage({super.key, this.usuario});
+  const HistoryTablePage({super.key, this.usuario, this.ultimaPagina});
   final Usuario? usuario;
+  final String? ultimaPagina;
 
   @override
   HistoryTablePageState createState() => HistoryTablePageState();
@@ -75,12 +76,15 @@ class HistoryTablePageState extends State<HistoryTablePage> {
 
   Material getPage() {
     if (emprestimos.isEmpty) {
-      return const Material(
+      return Material(
         child: Column(
           children: [
-            BreadCrumb(
-                breadcrumb: ["Início", "Usuários", "Histórico"],
-                icon: Icons.co_present_rounded),
+            BreadCrumb(breadcrumb: [
+              "Início",
+              widget.ultimaPagina ??
+                  "Usuários", // <- Use o parâmetro ultimaPagina
+              "Histórico"
+            ], icon: Icons.co_present_rounded),
             SingleChildScrollView(
               padding: EdgeInsets.symmetric(vertical: 250, horizontal: 40),
               child: Column(
@@ -152,9 +156,12 @@ class HistoryTablePageState extends State<HistoryTablePage> {
     return Material(
       child: Column(
         children: [
-          const BreadCrumb(
-              breadcrumb: ["Início", "Usuários", "Histórico"],
-              icon: Icons.co_present_rounded),
+          BreadCrumb(breadcrumb: [
+            "Início",
+            widget.ultimaPagina ??
+                "Usuários", // <- Use o parâmetro ultimaPagina aqui também
+            "Histórico"
+          ], icon: Icons.co_present_rounded),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 40),
             child: Column(
