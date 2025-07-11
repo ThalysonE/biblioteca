@@ -1297,8 +1297,7 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
                                                       horizontal: 8),
                                               child: IconButton(
                                                 icon: const Icon(Icons.history),
-                                                tooltip:
-                                                    'Ver histórico do usuário',
+                                                tooltip: 'Ver histórico',
                                                 iconSize: 18,
                                                 constraints:
                                                     const BoxConstraints(

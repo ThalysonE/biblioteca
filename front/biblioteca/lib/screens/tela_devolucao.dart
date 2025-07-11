@@ -22,7 +22,6 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
   void initState() {
     super.initState();
     exemplarProvider = Provider.of<ExemplarProvider>(context, listen: false);
-    
   }
 
   void msgSnackBar(String msg, int tipoCor) {
@@ -38,40 +37,41 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
     ));
   }
 
-  Future<void> searchBooks() async{
+  Future<void> searchBooks() async {
     showBooks = true;
     List<EmprestimosModel> selectbook;
     final searchQuery = _searchControllerBooks.text.trim();
-      if (searchQuery.isEmpty) {
-        selectbook = [];
-        return;
+    if (searchQuery.isEmpty) {
+      selectbook = [];
+      return;
+    }
+    try {
+      selectbook = await Provider.of<EmprestimoProvider>(context, listen: false)
+          .fetchEmprestimoExemplar(int.parse(searchQuery));
+    } catch (e) {
+      selectbook = [];
+      msgSnackBar('Erro ao fazer a pesquisa, tente novamente mais tarde', 0);
+    }
+    if (selectbook.isEmpty) {
+      msgSnackBar('Exemplar não se encontra na situação emprestado.', 0);
+    } else {
+      if (selectedBoxExemplar
+          .any((item) => item.IdDoEmprestimo == selectbook[0].IdDoEmprestimo)) {
+        msgSnackBar('Exemplar já adicionado na lista', 1);
+      } else {
+        selectbook[0].selecionadoRenov = true;
+        selectedBoxExemplar.add(selectbook[0]);
       }
-        try {
-          selectbook = await Provider.of<EmprestimoProvider>(context, listen: false).fetchEmprestimoExemplar(int.parse(searchQuery));
-        } catch (e) {
-          selectbook = [];
-          msgSnackBar('Erro ao fazer a pesquisa, tente novamente mais tarde', 0);
-        }
-        if(selectbook.isEmpty){
-          msgSnackBar('Exemplar não se encontra na situação emprestado.', 0);
-        }else{
-          if (selectedBoxExemplar.any((item)=> item.IdDoEmprestimo == selectbook[0].IdDoEmprestimo)) {
-            msgSnackBar('Exemplar já adicionado na lista', 1);
-          } else {
-            selectbook[0].selecionadoRenov = true;
-            selectedBoxExemplar.add(selectbook[0]);
-          }
-        }
-    setState(() {
-      
-    });
+    }
+    setState(() {});
   }
+
   Future<void> msgConfirmEmprestimo(List<EmprestimosModel> exemplaresEmpres) {
     return showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              title:  Text(
-                 'Confirmação de Devolução',
+              title: Text(
+                'Confirmação de Devolução',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
@@ -88,8 +88,8 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
                       color: const Color.fromARGB(215, 200, 200, 200)),
                   children: [
                     const TableRow(
-                        decoration: BoxDecoration(
-                            color: Color.fromARGB(255, 44, 62, 80)),
+                        decoration:
+                            BoxDecoration(color: Color.fromRGBO(38, 42, 79, 1)),
                         children: [
                           Padding(
                             padding: EdgeInsets.all(8.0),
@@ -135,7 +135,9 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
                           children: [
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text(exemplar.exemplarMap['IdDoExemplarLivro'].toString(),
+                              child: Text(
+                                  exemplar.exemplarMap['IdDoExemplarLivro']
+                                      .toString(),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       fontWeight: FontWeight.w300,
@@ -143,7 +145,8 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
                             ),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text(exemplar.exemplarMap['Livro']['Titulo'],
+                              child: Text(
+                                  exemplar.exemplarMap['Livro']['Titulo'],
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                       fontWeight: FontWeight.w300,
@@ -151,8 +154,7 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
                             ),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                  exemplar.formatarData(1),
+                              child: Text(exemplar.formatarData(1),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       fontWeight: FontWeight.w300,
@@ -194,17 +196,21 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
               ],
             ));
   }
-  Future<void> DevolverExemplares(List<EmprestimosModel> emprestimosRenov) async{
+
+  Future<void> DevolverExemplares(
+      List<EmprestimosModel> emprestimosRenov) async {
     final copia = List.from(emprestimosRenov);
-    for(EmprestimosModel item in copia){
+    for (EmprestimosModel item in copia) {
       print('Item: ${item.IdDoEmprestimo}');
-      await Provider.of<EmprestimoProvider>(context, listen: false).devolver(item.IdDoEmprestimo);
+      await Provider.of<EmprestimoProvider>(context, listen: false)
+          .devolver(item.IdDoEmprestimo);
     }
-    
   }
+
   @override
   Widget build(BuildContext context) {
-    exemplares = Provider.of<ExemplarProvider>(context, listen: true).listaEmprestados;
+    exemplares =
+        Provider.of<ExemplarProvider>(context, listen: true).listaEmprestados;
     return Material(
       child: Column(
         children: [
@@ -293,25 +299,31 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
                                           borderRadius:
                                               BorderRadius.circular(8))),
                                   onPressed: () {
-                                    List<EmprestimosModel> listaParaDevolucao  = [];
-                                    for(EmprestimosModel item in selectedBoxExemplar){
-                                      if(item.selecionadoRenov == true){
+                                    List<EmprestimosModel> listaParaDevolucao =
+                                        [];
+                                    for (EmprestimosModel item
+                                        in selectedBoxExemplar) {
+                                      if (item.selecionadoRenov == true) {
                                         listaParaDevolucao.add(item);
                                       }
                                     }
-                                    if(listaParaDevolucao.isEmpty){
-                                      msgSnackBar('Nenhum exemplar selecionado', 1);
-                                    }else{
+                                    if (listaParaDevolucao.isEmpty) {
+                                      msgSnackBar(
+                                          'Nenhum exemplar selecionado', 1);
+                                    } else {
                                       DevolverExemplares(listaParaDevolucao);
-                                      msgConfirmEmprestimo(listaParaDevolucao).then((_){
-                                     for (EmprestimosModel exemplar
-                                        in List.from(selectedBoxExemplar)) {
-                                      if (exemplar.selecionadoRenov == true) {
-                                        selectedBoxExemplar.remove(exemplar);
-                                      }
-                                    }
-                                    setState(() {});
-                                    });
+                                      msgConfirmEmprestimo(listaParaDevolucao)
+                                          .then((_) {
+                                        for (EmprestimosModel exemplar
+                                            in List.from(selectedBoxExemplar)) {
+                                          if (exemplar.selecionadoRenov ==
+                                              true) {
+                                            selectedBoxExemplar
+                                                .remove(exemplar);
+                                          }
+                                        }
+                                        setState(() {});
+                                      });
                                     }
                                   },
                                   child: const Row(
@@ -381,134 +393,146 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
                           width: 1150,
                           child: Table(
                             columnWidths: const {
-                              0: FlexColumnWidth(0.10),
-                              1: FlexColumnWidth(0.26),
-                              2: FlexColumnWidth(0.14),
-                              3: FlexColumnWidth(0.14),
-                              4: FlexColumnWidth(0.08),
+                              0: FlexColumnWidth(0.08), // Ação
+                              1: FlexColumnWidth(0.10), // Tombamento
+                              2: FlexColumnWidth(0.26), // Nome
+                              3: FlexColumnWidth(0.14), // Data de Empréstimo
+                              4: FlexColumnWidth(0.14), // Previsão Devolução
                             },
                             border: TableBorder.all(
                               color: const Color.fromARGB(215, 200, 200, 200),
                             ),
                             children: [
                               const TableRow(
-                                  decoration: BoxDecoration(
-                                    color: Color.fromARGB(255, 44, 62, 80),
+                                decoration: BoxDecoration(
+                                  color: Color.fromRGBO(38, 42, 79, 1),
+                                ),
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.all(7.0),
+                                    child: Text('Ação',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                            fontSize: 15)),
                                   ),
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text('Tombamento',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15)),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(7.0),
-                                      child: Text('Nome',
-                                          textAlign: TextAlign.left,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15)),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(7.0),
-                                      child: Text('Data de Empréstimo',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15)),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(7.0),
-                                      child: Text('Previsão Devolução',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15)),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(7.0),
-                                      child: Text('Ação',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                              fontSize: 15)),
-                                    ),
-                                  ]),
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text('Tombamento',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                            fontSize: 15)),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(7.0),
+                                    child: Text('Nome',
+                                        textAlign: TextAlign.left,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                            fontSize: 15)),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(7.0),
+                                    child: Text('Data de Empréstimo',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                            fontSize: 15)),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(7.0),
+                                    child: Text('Previsão Devolução',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                            fontSize: 15)),
+                                  ),
+                                ],
+                              ),
                               for (int x = 0;
                                   x < selectedBoxExemplar.length;
                                   x++)
                                 TableRow(
-                                    decoration: BoxDecoration(
-                                      color: x % 2 == 0
-                                          ? Color.fromRGBO(233, 235, 238, 75)
-                                          : Color.fromRGBO(255, 255, 255, 1),
+                                  decoration: BoxDecoration(
+                                    color: x % 2 == 0
+                                        ? const Color.fromRGBO(
+                                            233, 235, 238, 75)
+                                        : const Color.fromRGBO(
+                                            255, 255, 255, 1),
+                                  ),
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 6,
+                                        horizontal: 37,
+                                      ),
+                                      child: Checkbox(
+                                        value: selectedBoxExemplar[x]
+                                            .selecionadoRenov,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            selectedBoxExemplar[x]
+                                                    .selecionadoRenov =
+                                                value as bool;
+                                          });
+                                        },
+                                      ),
                                     ),
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 9.4, horizontal: 8),
-                                        child: Text(
-                                            selectedBoxExemplar[x].exemplarMap['IdDoExemplarLivro'].toString(),
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w300,
-                                                fontSize: 14.5)),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 9.4, horizontal: 8),
+                                      child: Text(
+                                        selectedBoxExemplar[x]
+                                            .exemplarMap['IdDoExemplarLivro']
+                                            .toString(),
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w300,
+                                            fontSize: 14.5),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 9.4, horizontal: 8),
-                                        child: Text(selectedBoxExemplar[x].exemplarMap['Livro']['Titulo'],
-                                            textAlign: TextAlign.left,
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w300,
-                                                fontSize: 14.5)),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 9.4, horizontal: 8),
+                                      child: Text(
+                                        selectedBoxExemplar[x]
+                                            .exemplarMap['Livro']['Titulo'],
+                                        textAlign: TextAlign.left,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w300,
+                                            fontSize: 14.5),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 9.4, horizontal: 8),
-                                        child: Text(
-                                            selectedBoxExemplar[x]
-                                                .formatarData(0),
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w300,   
-                                                fontSize: 14.5)),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 9.4, horizontal: 8),
+                                      child: Text(
+                                        selectedBoxExemplar[x].formatarData(0),
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w300,
+                                            fontSize: 14.5),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 9.4, horizontal: 8),
-                                        child: Text(
-                                            selectedBoxExemplar[x]
-                                                .formatarData(1),
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w300,
-                                                fontSize: 14.5)),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 9.4, horizontal: 8),
+                                      child: Text(
+                                        selectedBoxExemplar[x].formatarData(1),
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w300,
+                                            fontSize: 14.5),
                                       ),
-                                      Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 6,
-                                            horizontal: 37,
-                                          ),
-                                          child: Checkbox(
-                                              value: selectedBoxExemplar[x]
-                                                  .selecionadoRenov,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  selectedBoxExemplar[x]
-                                                          .selecionadoRenov =
-                                                      value as bool;
-                                                });
-                                              }))
-                                    ]),
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                         ),
