@@ -9,7 +9,6 @@ String autorToJson(Autor data) => json.encode(data.toJson());
 class Autor {
   int id;
   String nome;
-  int? anoNascimento;
   String nacionalidade;
   int? nacionalidadeCodigo;
   String? sexoCodigo;
@@ -17,7 +16,7 @@ class Autor {
   String get sexo => sexoCodigo != null && sexoCodigo!.isNotEmpty
       ? sexos
           .firstWhere(
-            (s) => s.codigo == sexoCodigo,
+            (s) => s.codigo == sexoCodigo,  
             orElse: () => Sexo(codigo: '', sexo: ''),
           )
           .sexo
@@ -26,7 +25,6 @@ class Autor {
   Autor({
     this.id = 0,
     required this.nome,
-    this.anoNascimento,
     this.nacionalidade = '',
     this.nacionalidadeCodigo,
     this.sexoCodigo,
@@ -35,7 +33,6 @@ class Autor {
   factory Autor.fromJson(Map<String, dynamic> json) => Autor(
         id: json["id"],
         nome: json["nome"],
-        anoNascimento: json["ano_nascimento"],
         nacionalidade: json["Nacionalidade"] ?? '',
         nacionalidadeCodigo: json["nacionalidade_codigo"],
         sexoCodigo: json["sexo_codigo"],
@@ -44,7 +41,6 @@ class Autor {
   Map<String, dynamic> toJson() => {
         "id": id,
         "nome": nome,
-        "ano_nascimento": anoNascimento,
         "Nacionalidade": nacionalidadeCodigo,
         "sexo": sexoCodigo,
       };

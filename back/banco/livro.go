@@ -372,7 +372,6 @@ func PegarAutoresAssociadosAoLivro(idLivro int) ([]modelos.AutorResposta, error)
 		SELECT 
 			a.id_autor,
 			a.nome, 
-			a.ano_nascimento,
 			a.nacionalidade as nacionalidade_codigo,
 			p.nome,
 			a.sexo as codigo_sexo,
@@ -392,7 +391,7 @@ func PegarAutoresAssociadosAoLivro(idLivro int) ([]modelos.AutorResposta, error)
 	var autores []modelos.AutorResposta
 	for linhas.Next() {
 		var autor modelos.AutorResposta
-		linhas.Scan(&autor.ID, &autor.Nome, &autor.AnoNascimento, &autor.NacionalidadeCodigo, &autor.Nacionalidade, &autor.SexoCodigo, &autor.Sexo)
+		linhas.Scan(&autor.ID, &autor.Nome, &autor.NacionalidadeCodigo, &autor.Nacionalidade, &autor.SexoCodigo, &autor.Sexo)
 		autores = append(autores, autor)
 	}
 

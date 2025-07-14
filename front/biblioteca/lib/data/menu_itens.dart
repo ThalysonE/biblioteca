@@ -18,6 +18,9 @@ List<MenuModelo> menuitens = [
     SubMenuModelo("Relatórios", "/relatorios"),
     SubMenuModelo("Nada Consta", "/nada_consta")
   ]),
-  MenuModelo("Controle de Usuários", Icons.co_present_rounded, [], route: '/usuarios')
+  MenuModelo("Gestão Acadêmica", Icons.co_present_rounded, [
+    SubMenuModelo("Turmas", "/turmas"),
+    SubMenuModelo('Usuários', '/usuarios')
+  ])
 ];
 

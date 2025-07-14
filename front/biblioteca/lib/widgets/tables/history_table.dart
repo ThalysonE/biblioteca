@@ -22,6 +22,13 @@ class HistoryTablePageState extends State<HistoryTablePage> {
   bool _isLoading = true;
   late List<EmprestimosModel> emprestimos;
 
+  final TextEditingController _searchController = TextEditingController();
+  String _searchText = '';
+
+  String _sortColumn =
+      'tombamento'; // 'tombamento', 'livro', 'dataEmprestimo', 'dataDevolucao', 'status'
+  bool _isAscending = true;
+
   @override
   void initState() {
     super.initState();
@@ -87,14 +94,60 @@ class HistoryTablePageState extends State<HistoryTablePage> {
       );
     }
 
-    int totalPages = (emprestimos.length / rowsPerPage).ceil();
+    List<EmprestimosModel> filteredEmprestimos = emprestimos;
+    if (_searchText.isNotEmpty) {
+      filteredEmprestimos = filteredEmprestimos
+          .where((e) =>
+              e.exemplarMap['IdDoExemplarLivro']
+                  .toString()
+                  .contains(_searchText) ||
+              (e.exemplarMap['Livro']['Titulo'] as String)
+                  .toLowerCase()
+                  .contains(_searchText) ||
+              _formatDate(e.dataEmprestimo).contains(_searchText) ||
+              _formatDate(e.dataDeDevolucao).contains(_searchText) ||
+              _getStatusText(e.status).toLowerCase().contains(_searchText))
+          .toList();
+    }
+
+    // Sorting
+    filteredEmprestimos.sort((a, b) {
+      int cmp;
+      switch (_sortColumn) {
+        case 'tombamento':
+          cmp = a.exemplarMap['IdDoExemplarLivro']
+              .toString()
+              .compareTo(b.exemplarMap['IdDoExemplarLivro'].toString());
+          break;
+        case 'livro':
+          cmp = (a.exemplarMap['Livro']['Titulo'] as String)
+              .toLowerCase()
+              .compareTo(
+                  (b.exemplarMap['Livro']['Titulo'] as String).toLowerCase());
+          break;
+        case 'dataEmprestimo':
+          cmp = a.dataEmprestimo.compareTo(b.dataEmprestimo);
+          break;
+        case 'dataDevolucao':
+          cmp = a.dataDeDevolucao.compareTo(b.dataDeDevolucao);
+          break;
+        case 'status':
+          cmp = _getStatusText(a.status).compareTo(_getStatusText(b.status));
+          break;
+        default:
+          cmp = 0;
+      }
+      return _isAscending ? cmp : -cmp;
+    });
+
+    int totalPages = (filteredEmprestimos.length / rowsPerPage).ceil();
     int startIndex = (currentPage - 1) * rowsPerPage;
-    int endIndex = (startIndex + rowsPerPage) < emprestimos.length
+    int endIndex = (startIndex + rowsPerPage) < filteredEmprestimos.length
         ? (startIndex + rowsPerPage)
-        : emprestimos.length;
+        : filteredEmprestimos.length;
 
     List<EmprestimosModel> paginatedEmprestimos =
-        emprestimos.sublist(startIndex, endIndex);
+        filteredEmprestimos.sublist(startIndex, endIndex);
 
     return Material(
       child: Column(
@@ -102,11 +155,64 @@ class HistoryTablePageState extends State<HistoryTablePage> {
           const BreadCrumb(
               breadcrumb: ["Início", "Usuários", "Histórico"],
               icon: Icons.co_present_rounded),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (widget.usuario != null)
+                  Text(
+                    'Histórico de ${widget.usuario!.nome}',
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 38, 42, 79),
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Icon(Icons.menu_book,
+                        color: Color.fromARGB(255, 38, 42, 79)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Total de empréstimos: ${emprestimos.length}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromARGB(255, 38, 42, 79),
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    const Icon(Icons.schedule, color: Colors.orange),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Em andamento: ${emprestimos.where((e) => e.status == 1).length}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromARGB(255, 38, 42, 79),
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    const Icon(Icons.check_circle, color: Colors.green),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Concluído: ${emprestimos.where((e) => e.status == 3).length}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromARGB(255, 38, 42, 79),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 40),
+            padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 40),
             child: Column(
               children: [
                 _buildPaginationControls(),
+                const SizedBox(height: 16), // espaçamento padrao via gambiarra
                 _buildTable(paginatedEmprestimos),
                 _buildPaginationButtons(totalPages),
               ],
@@ -121,24 +227,53 @@ class HistoryTablePageState extends State<HistoryTablePage> {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('Exibir'),
-          DropdownButton<int>(
-            value: rowsPerPage,
-            onChanged: (value) {
-              if (value != null) {
+          // Registros por página
+          Row(
+            children: [
+              const Text('Exibir'),
+              const SizedBox(width: 8),
+              DropdownButton<int>(
+                value: rowsPerPage,
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      rowsPerPage = value;
+                      currentPage = 1;
+                    });
+                  }
+                },
+                items: rowsPerPageOptions.map((int value) {
+                  return DropdownMenuItem<int>(
+                      value: value, child: Text(value.toString()));
+                }).toList(),
+              ),
+              const SizedBox(width: 8),
+              const Text('registros por página'),
+            ],
+          ),
+          // Pesquisar
+          SizedBox(
+            width: 300,
+            child: TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                labelText: 'Pesquisar',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+                isDense: true,
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              ),
+              onChanged: (value) {
                 setState(() {
-                  rowsPerPage = value;
+                  _searchText = value.toLowerCase();
                   currentPage = 1;
                 });
-              }
-            },
-            items: rowsPerPageOptions.map((int value) {
-              return DropdownMenuItem<int>(
-                  value: value, child: Text(value.toString()));
-            }).toList(),
+              },
+            ),
           ),
-          const Text(' registros por página'),
         ],
       ),
     );
@@ -155,52 +290,189 @@ class HistoryTablePageState extends State<HistoryTablePage> {
         4: FlexColumnWidth(0.15),
       },
       children: [
-        const TableRow(
-          decoration: BoxDecoration(color: Color.fromARGB(255, 44, 62, 80)),
+        TableRow(
+          decoration:
+              const BoxDecoration(color: Color.fromARGB(255, 38, 42, 79)),
           children: [
+            // Tombamento
             Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('Tombamento',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                        fontSize: 15))),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Livro',
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w500,
+              padding: const EdgeInsets.all(8.0),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    if (_sortColumn == 'tombamento') {
+                      _isAscending = !_isAscending;
+                    } else {
+                      _sortColumn = 'tombamento';
+                      _isAscending = true;
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    const Text(
+                      'Tombamento',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          fontSize: 15),
+                    ),
+                    Icon(
+                      _sortColumn == 'tombamento'
+                          ? (_isAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward)
+                          : Icons.unfold_more,
                       color: Colors.white,
-                      fontSize: 15)),
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
             ),
+            // Livro
             Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Data Empréstimo',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w500,
+              padding: const EdgeInsets.all(8.0),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    if (_sortColumn == 'livro') {
+                      _isAscending = !_isAscending;
+                    } else {
+                      _sortColumn = 'livro';
+                      _isAscending = true;
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    const Text(
+                      'Livro',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          fontSize: 15),
+                    ),
+                    Icon(
+                      _sortColumn == 'livro'
+                          ? (_isAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward)
+                          : Icons.unfold_more,
                       color: Colors.white,
-                      fontSize: 15)),
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
             ),
+            // Data Empréstimo
             Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Data Devolução',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w500,
+              padding: const EdgeInsets.all(8.0),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    if (_sortColumn == 'dataEmprestimo') {
+                      _isAscending = !_isAscending;
+                    } else {
+                      _sortColumn = 'dataEmprestimo';
+                      _isAscending = true;
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    const Text(
+                      'Data Empréstimo',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          fontSize: 15),
+                    ),
+                    Icon(
+                      _sortColumn == 'dataEmprestimo'
+                          ? (_isAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward)
+                          : Icons.unfold_more,
                       color: Colors.white,
-                      fontSize: 15)),
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
             ),
+            // Data Devolução
             Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Status',
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w500,
+              padding: const EdgeInsets.all(8.0),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    if (_sortColumn == 'dataDevolucao') {
+                      _isAscending = !_isAscending;
+                    } else {
+                      _sortColumn = 'dataDevolucao';
+                      _isAscending = true;
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    const Text(
+                      'Data Devolução',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          fontSize: 15),
+                    ),
+                    Icon(
+                      _sortColumn == 'dataDevolucao'
+                          ? (_isAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward)
+                          : Icons.unfold_more,
                       color: Colors.white,
-                      fontSize: 15)),
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Status
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    if (_sortColumn == 'status') {
+                      _isAscending = !_isAscending;
+                    } else {
+                      _sortColumn = 'status';
+                      _isAscending = true;
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    const Text(
+                      'Status',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          fontSize: 15),
+                    ),
+                    Icon(
+                      _sortColumn == 'status'
+                          ? (_isAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward)
+                          : Icons.unfold_more,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -220,7 +492,12 @@ class HistoryTablePageState extends State<HistoryTablePage> {
               _buildDateCell(
                   _formatDate(paginatedEmprestimos[x].dataEmprestimo)),
               _buildDateCell(
-                  _formatDate(paginatedEmprestimos[x].dataDeDevolucao)),
+                (paginatedEmprestimos[x].status == 2 ||
+                            paginatedEmprestimos[x].status == 3) &&
+                        paginatedEmprestimos[x].dataDeDevolucao.isNotEmpty
+                    ? _formatDate(paginatedEmprestimos[x].dataDeDevolucao)
+                    : '-',
+              ),
               _buildStatusCell(paginatedEmprestimos[x].status),
             ],
           ),
@@ -328,8 +605,9 @@ class HistoryTablePageState extends State<HistoryTablePage> {
                 margin: const EdgeInsets.symmetric(horizontal: 4.0),
                 padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
-                  color:
-                      i == currentPage ? Colors.blueGrey : Colors.transparent,
+                  color: i == currentPage
+                      ? Color.fromARGB(255, 38, 42, 79)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(4.0),
                   border: Border.all(color: Colors.grey),
                 ),
@@ -372,13 +650,13 @@ class HistoryTablePageState extends State<HistoryTablePage> {
   Color _getStatusColor(int status) {
     switch (status) {
       case 1:
-        return const Color(0xFF1976D2);
+        return Colors.orange;
       case 2:
-        return const Color(0xFFED6C02);
+        return Colors.orangeAccent;
       case 3:
-        return const Color(0xFF2E7D32);
+        return Colors.green;
       default:
-        return const Color(0xFF9E9E9E);
+        return Colors.grey;
     }
   }
 

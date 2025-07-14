@@ -16,6 +16,7 @@ import 'package:biblioteca/widgets/tables/book_table_page.dart';
 import 'package:biblioteca/widgets/tables/categories_table_page.dart';
 import 'package:biblioteca/widgets/tables/exemplar_table_page.dart';
 import 'package:biblioteca/widgets/tables/history_table.dart';
+import 'package:biblioteca/widgets/tables/turmas_table_page.dart';
 import 'package:biblioteca/widgets/tables/user_table_page.dart';
 import 'package:biblioteca/widgets/navegacao/menu_navegacao.dart';
 import 'package:biblioteca/utils/theme.dart';
@@ -264,6 +265,9 @@ class _TelaPaginaIncialState extends State<TelaPaginaIncial> {
                         case AppRoutes.historico:
                           final usuario = settings.arguments as Usuario;
                           page = HistoryTablePage(usuario: usuario);
+                          break;
+                        case AppRoutes.turmas:
+                          page = const TurmasTablePage();
                           break;
                         default:
                           page = const LibraryDashboard();

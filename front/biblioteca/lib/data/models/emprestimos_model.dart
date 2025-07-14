@@ -1,8 +1,3 @@
-// const(
-// 	StatusEmprestimoEmAndamento = 1
-//   StatusEmprestimoEntregueComAtraso = 2
-//   StatusEmprestimoConcluido = 3
-// )
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 

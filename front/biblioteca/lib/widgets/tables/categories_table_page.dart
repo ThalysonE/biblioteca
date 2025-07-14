@@ -15,6 +15,9 @@ class CategoriesTablePage extends StatefulWidget {
 class _CategoriesTablePageState extends State<CategoriesTablePage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
+
+  String _searchText = '';
 
   int rowsPerPage = 10; // Quantidade de linhas por página
   final List<int> rowsPerPageOptions = [5, 10, 15, 20];
@@ -22,8 +25,11 @@ class _CategoriesTablePageState extends State<CategoriesTablePage> {
 
   bool _isInit = true;
   bool _isLoading = false;
+  bool _isAscending = true;
 
   late List<Categoria> categorias;
+
+  String _sortColumn = 'descricao';
 
   @override
   void didChangeDependencies() {
@@ -62,11 +68,23 @@ class _CategoriesTablePageState extends State<CategoriesTablePage> {
     Categoria? cat =
         await categoriaProvider.addCategoria(_descriptionController.text);
 
-    setState(() {
-    });
+    setState(() {});
   }
 
   Material getPage(CategoriaProvider provider, List<Categoria> categories) {
+    if (_searchText.isNotEmpty) {
+      categories = categories
+          .where((c) => c.descricao.toLowerCase().contains(_searchText))
+          .toList();
+    }
+
+    // Ordenação
+    categories.sort((a, b) {
+      return _isAscending
+          ? a.descricao.toLowerCase().compareTo(b.descricao.toLowerCase())
+          : b.descricao.toLowerCase().compareTo(a.descricao.toLowerCase());
+    });
+
     int totalPages = (categories.length / rowsPerPage).ceil();
 
     // Calcula o índice inicial e final dos usuários exibidos
@@ -135,32 +153,61 @@ class _CategoriesTablePageState extends State<CategoriesTablePage> {
                   height: 20.0,
                 ),
 
-                // Tabela de usuários
+                // Registros por página e campo de Pesquisa
                 Padding(
                   padding: const EdgeInsets.all(2.0),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Exibir '),
-                      DropdownButton<int>(
-                        value: rowsPerPage,
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() {
-                              rowsPerPage = value;
-                              currentPage =
-                                  1; // Reinicia para a primeira página
-                            });
-                          }
-                        },
-                        items: rowsPerPageOptions.map((int value) {
-                          return DropdownMenuItem<int>(
-                              value: value, child: Text(value.toString()));
-                        }).toList(),
+                      // Registros por página
+                      Row(
+                        children: [
+                          const Text('Exibir'),
+                          const SizedBox(width: 8),
+                          DropdownButton<int>(
+                            value: rowsPerPage,
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  rowsPerPage = value;
+                                  currentPage = 1;
+                                });
+                              }
+                            },
+                            items: rowsPerPageOptions.map((int value) {
+                              return DropdownMenuItem<int>(
+                                  value: value, child: Text(value.toString()));
+                            }).toList(),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('registros por página'),
+                        ],
                       ),
-                      const Text(' registros por página'),
+                      // Pesquisar
+                      SizedBox(
+                        width: 300,
+                        child: TextField(
+                          controller: _searchController,
+                          decoration: const InputDecoration(
+                            labelText: 'Pesquisar',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 12),
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              _searchText = value.toLowerCase();
+                              currentPage = 1;
+                            });
+                          },
+                        ),
+                      ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 16),
                 Table(
                   border: TableBorder.all(
                       color: const Color.fromARGB(215, 200, 200, 200)),
@@ -174,19 +221,47 @@ class _CategoriesTablePageState extends State<CategoriesTablePage> {
                   },
                   children: [
                     // Cabeçalho da tabela
-                    const TableRow(
-                      decoration:
-                          BoxDecoration(color: Color.fromARGB(255, 44, 62, 80)),
+                    TableRow(
+                      decoration: const BoxDecoration(
+                          color: Color.fromARGB(255, 38, 42, 79)),
                       children: [
                         Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Categoria',
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                    fontSize: 15))),
-                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (_sortColumn == 'descricao') {
+                                  _isAscending = !_isAscending;
+                                } else {
+                                  _sortColumn = 'descricao';
+                                  _isAscending = true;
+                                }
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Categoria',
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      fontSize: 15),
+                                ),
+                                Icon(
+                                  _sortColumn == 'descricao'
+                                      ? (_isAscending
+                                          ? Icons.arrow_upward
+                                          : Icons.arrow_downward)
+                                      : Icons.unfold_more,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const Padding(
                           padding: EdgeInsets.all(8.0),
                           child: Text('Opções',
                               textAlign: TextAlign.left,
@@ -399,7 +474,7 @@ class _CategoriesTablePageState extends State<CategoriesTablePage> {
                             padding: const EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
                               color: i == currentPage
-                                  ? Colors.blueGrey
+                                  ? Color.fromARGB(255, 38, 42, 79)
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(4.0),
                               border: Border.all(color: Colors.grey),

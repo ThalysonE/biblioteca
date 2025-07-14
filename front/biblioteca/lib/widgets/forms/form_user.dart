@@ -1,3 +1,4 @@
+import 'package:biblioteca/data/models/api_response_model.dart';
 import 'package:biblioteca/data/models/turma.dart';
 import 'package:biblioteca/data/models/usuario_model.dart';
 import 'package:biblioteca/data/providers/usuario_provider.dart';
@@ -52,9 +53,9 @@ class _FormUserState extends State<FormUser> {
   bool showTurmas = false;
 
   Future<void> _loadTurmas(int turno) async {
-    var futureTurmas = await _turmasService.fetchTurmas();
+    ApiResponse futureTurmas = await _turmasService.fetchTurmas();
     setState(() {
-      turmas = futureTurmas.where((turma) => turma.turno == turno).toList();
+      turmas = futureTurmas.body.where((turma) => turma.turno == turno).toList();
       _turmaController.text = turmas[0].turma.toString();
 
       if (!showTurmas) {
@@ -441,7 +442,6 @@ class _FormUserState extends State<FormUser> {
               if (value == null || value.isEmpty) {
                 return "Selecione um turno";
               }
-
               return null;
             },
           ),

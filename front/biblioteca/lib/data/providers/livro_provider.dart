@@ -51,15 +51,18 @@ class LivroProvider extends ChangeNotifier {
   Future<void> refreshLivros() async {
     await loadLivros();
   }
-  Future<List<Livro>> searchLivros(String textoDeBusca) async{
+
+  Future<List<Livro>> searchLivros(String textoDeBusca) async {
     LivrosAtingidos? loadedLivros;
-    try{
-      loadedLivros= await _livroService.searchLivros(idDaSessao, usuarioLogado, textoDeBusca);
+    try {
+      loadedLivros = await _livroService.searchLivros(
+          idDaSessao, usuarioLogado, textoDeBusca);
       return loadedLivros.livrosAtingidos;
     }catch(e){
       throw Exception("LivroProvider: Erro ao pesquisar livro - $e");
     }
   }
+
   // Adicionar um novo livro
   Future<bool> addLivro(Map<String, dynamic> livro, List<String> autores,
       List<String> categorias) async {
@@ -88,19 +91,16 @@ class LivroProvider extends ChangeNotifier {
   }
 
   // Editar um livro existente
-  Future<void> editLivro(Map<String, dynamic> livro) async {
+  Future<void> editLivro(Map<String, dynamic> livro, List<String> autores,
+      List<String> categorias) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final index = _livrosEnvio.indexWhere((l) => l["Isbn"] == livro["Isbn"]);
-      if (index == -1) {
-        throw Exception("Livro com ISBN ${livro["Isbn"]} não encontrado.");
-      }
-
-      await _livroService.alterLivro(livro);
-      _livrosEnvio[index] = livro;
+      await _livroService.alterLivro(
+          idDaSessao, usuarioLogado, livro, autores, categorias);
+      await loadLivros();
     } catch (e) {
       _error = "Erro ao alterar o Livro:\n$e";
     } finally {
@@ -119,10 +119,10 @@ class LivroProvider extends ChangeNotifier {
       if (!_livros.any((livro) => livro.idDoLivro == idLivro)) {
         throw Exception("Livro com ID $idLivro não encontrado.");
       }
-      
+
       await _livroService.deleteLivro(idDaSessao, usuarioLogado, idLivro);
       _livros.removeWhere((livro) => livro.idDoLivro == idLivro);
-      
+
       await loadLivros();
     } catch (e) {
       _error = e.toString().replaceAll('Exception: ', '');

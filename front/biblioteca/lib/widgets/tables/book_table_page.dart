@@ -19,6 +19,11 @@ class BookTablePageState extends State<BookTablePage> {
   int rowsPerPage = 10; // Quantidade de linhas por página
   final List<int> rowsPerPageOptions = [5, 10, 15, 20];
   int currentPage = 1; // Página atual
+  final TextEditingController _searchController = TextEditingController();
+  String _searchText = '';
+
+  String _sortColumn = 'titulo'; // 'titulo', 'isbn', 'editora', 'anoPublicacao'
+  bool _isAscending = true;
 
   @override
   void initState() {
@@ -46,6 +51,40 @@ class BookTablePageState extends State<BookTablePage> {
 
   Material tableLivro(BuildContext context) {
     List<Livro> books = Provider.of<LivroProvider>(context).livros;
+
+    // Filtro de busca
+    if (_searchText.isNotEmpty) {
+      books = books
+          .where((b) =>
+              b.titulo.toLowerCase().contains(_searchText) ||
+              b.isbn.toLowerCase().contains(_searchText) ||
+              b.editora.toLowerCase().contains(_searchText) ||
+              b.anoPublicacao.toString().contains(_searchText))
+          .toList();
+    }
+
+    // Ordenação
+    books.sort((a, b) {
+      int cmp;
+      switch (_sortColumn) {
+        case 'titulo':
+          cmp = a.titulo.toLowerCase().compareTo(b.titulo.toLowerCase());
+          break;
+        case 'isbn':
+          cmp = a.isbn.toLowerCase().compareTo(b.isbn.toLowerCase());
+          break;
+        case 'editora':
+          cmp = a.editora.toLowerCase().compareTo(b.editora.toLowerCase());
+          break;
+        case 'anoPublicacao':
+          cmp = a.anoPublicacao.compareTo(b.anoPublicacao);
+          break;
+        default:
+          cmp = 0;
+      }
+      return _isAscending ? cmp : -cmp;
+    });
+
     int totalPages = (books.length / rowsPerPage).ceil();
 
     // Calcula o índice inicial e final dos livros exibidos
@@ -106,31 +145,62 @@ class BookTablePageState extends State<BookTablePage> {
                   height: 20.0,
                 ),
 
-                // Tabela de livros
+                // Registros por página e campo de Pesquisa
                 Padding(
                   padding: const EdgeInsets.all(2.0),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Exibir '),
-                      DropdownButton<int>(
-                        value: rowsPerPage,
-                        onChanged: (value) {
-                          if (value != null) {
+                      // Registros por página
+                      Row(
+                        children: [
+                          const Text('Exibir'),
+                          const SizedBox(width: 8),
+                          DropdownButton<int>(
+                            value: rowsPerPage,
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  rowsPerPage = value;
+                                  currentPage = 1;
+                                });
+                              }
+                            },
+                            items: rowsPerPageOptions.map((int value) {
+                              return DropdownMenuItem<int>(
+                                  value: value, child: Text(value.toString()));
+                            }).toList(),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('registros por página'),
+                        ],
+                      ),
+                      // Pesquisar
+                      SizedBox(
+                        width: 300,
+                        child: TextField(
+                          controller: _searchController,
+                          decoration: const InputDecoration(
+                            labelText: 'Pesquisar',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 12),
+                          ),
+                          onChanged: (value) {
                             setState(() {
-                              rowsPerPage = value;
+                              _searchText = value.toLowerCase();
                               currentPage = 1;
                             });
-                          }
-                        },
-                        items: rowsPerPageOptions.map((int value) {
-                          return DropdownMenuItem<int>(
-                              value: value, child: Text(value.toString()));
-                        }).toList(),
+                          },
+                        ),
                       ),
-                      const Text(' registros por página'),
                     ],
                   ),
                 ),
+                const SizedBox(height: 16),
+                // Tabela de livros
                 Table(
                   border: TableBorder.all(
                       color: const Color.fromARGB(215, 200, 200, 200)),
@@ -143,47 +213,157 @@ class BookTablePageState extends State<BookTablePage> {
                   },
                   children: [
                     // Cabeçalho da tabela
-                    const TableRow(
-                      decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 44, 62, 80),
+                    TableRow(
+                      decoration: const BoxDecoration(
+                        color: Color.fromARGB(255, 38, 42, 79),
                       ),
                       children: [
+                        // Título
                         Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Título',
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                    fontSize: 15))),
-                        Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text('ISBN',
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500,
+                          padding: const EdgeInsets.all(8.0),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (_sortColumn == 'titulo') {
+                                  _isAscending = !_isAscending;
+                                } else {
+                                  _sortColumn = 'titulo';
+                                  _isAscending = true;
+                                }
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Título',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      fontSize: 15),
+                                ),
+                                Icon(
+                                  _sortColumn == 'titulo'
+                                      ? (_isAscending
+                                          ? Icons.arrow_upward
+                                          : Icons.arrow_downward)
+                                      : Icons.unfold_more,
                                   color: Colors.white,
-                                  fontSize: 15)),
+                                  size: 16,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
+                        // ISBN
                         Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text('Editora',
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500,
+                          padding: const EdgeInsets.all(8.0),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (_sortColumn == 'isbn') {
+                                  _isAscending = !_isAscending;
+                                } else {
+                                  _sortColumn = 'isbn';
+                                  _isAscending = true;
+                                }
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'ISBN',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      fontSize: 15),
+                                ),
+                                Icon(
+                                  _sortColumn == 'isbn'
+                                      ? (_isAscending
+                                          ? Icons.arrow_upward
+                                          : Icons.arrow_downward)
+                                      : Icons.unfold_more,
                                   color: Colors.white,
-                                  fontSize: 15)),
+                                  size: 16,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
+                        // Editora
                         Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text('Data de Publicação',
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500,
+                          padding: const EdgeInsets.all(8.0),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (_sortColumn == 'editora') {
+                                  _isAscending = !_isAscending;
+                                } else {
+                                  _sortColumn = 'editora';
+                                  _isAscending = true;
+                                }
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Editora',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      fontSize: 15),
+                                ),
+                                Icon(
+                                  _sortColumn == 'editora'
+                                      ? (_isAscending
+                                          ? Icons.arrow_upward
+                                          : Icons.arrow_downward)
+                                      : Icons.unfold_more,
                                   color: Colors.white,
-                                  fontSize: 15)),
+                                  size: 16,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
+                        // Ano de Publicação
                         Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (_sortColumn == 'anoPublicacao') {
+                                  _isAscending = !_isAscending;
+                                } else {
+                                  _sortColumn = 'anoPublicacao';
+                                  _isAscending = true;
+                                }
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Ano de Publicação',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      fontSize: 15),
+                                ),
+                                Icon(
+                                  _sortColumn == 'anoPublicacao'
+                                      ? (_isAscending
+                                          ? Icons.arrow_upward
+                                          : Icons.arrow_downward)
+                                      : Icons.unfold_more,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Opções
+                        const Padding(
                           padding: EdgeInsets.all(8.0),
                           child: Text('Opções',
                               textAlign: TextAlign.left,
@@ -242,9 +422,7 @@ class BookTablePageState extends State<BookTablePage> {
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                  paginatedBooks[x]
-                                      .anoPublicacao
-                                      .toString(),
+                                  paginatedBooks[x].anoPublicacao.toString(),
                                   textAlign: TextAlign.left,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w300,
@@ -261,23 +439,28 @@ class BookTablePageState extends State<BookTablePage> {
                                     onPressed: () async {
                                       try {
                                         // Caixa de confirmação
-                                        final bool? confirm = await showDialog<bool>(
+                                        final bool? confirm =
+                                            await showDialog<bool>(
                                           context: context,
                                           builder: (BuildContext context) {
                                             return AlertDialog(
-                                              title: const Text('Confirmar exclusão'),
-                                              content: Text('Tem certeza que deseja excluir o livro "${paginatedBooks[x].titulo}"?'),
+                                              title: const Text(
+                                                  'Confirmar exclusão'),
+                                              content: Text(
+                                                  'Tem certeza que deseja excluir o livro "${paginatedBooks[x].titulo}"?'),
                                               actions: <Widget>[
                                                 TextButton(
                                                   child: const Text('Cancelar'),
                                                   onPressed: () {
-                                                    Navigator.of(context).pop(false);
+                                                    Navigator.of(context)
+                                                        .pop(false);
                                                   },
                                                 ),
                                                 TextButton(
                                                   child: const Text('Excluir'),
                                                   onPressed: () {
-                                                    Navigator.of(context).pop(true);
+                                                    Navigator.of(context)
+                                                        .pop(true);
                                                   },
                                                 ),
                                               ],
@@ -286,13 +469,18 @@ class BookTablePageState extends State<BookTablePage> {
                                         );
 
                                         if (confirm == true) {
-                                          await Provider.of<LivroProvider>(context, listen: false)
-                                              .deleteLivro(paginatedBooks[x].idDoLivro);
-                                          
+                                          await Provider.of<LivroProvider>(
+                                                  context,
+                                                  listen: false)
+                                              .deleteLivro(
+                                                  paginatedBooks[x].idDoLivro);
+
                                           if (mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
                                               const SnackBar(
-                                                content: Text('Livro excluído com sucesso'),
+                                                content: Text(
+                                                    'Livro excluído com sucesso'),
                                                 backgroundColor: Colors.green,
                                               ),
                                             );
@@ -300,9 +488,11 @@ class BookTablePageState extends State<BookTablePage> {
                                         }
                                       } catch (e) {
                                         if (mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             SnackBar(
-                                              content: Text('Erro ao excluir livro: $e'),
+                                              content: Text(
+                                                  'Erro ao excluir livro: $e'),
                                               backgroundColor: Colors.red,
                                             ),
                                           );
@@ -334,7 +524,13 @@ class BookTablePageState extends State<BookTablePage> {
                                   const SizedBox(width: 3),
                                   ElevatedButton(
                                     onPressed: () {
-                                      // Editar
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return livroDialog(
+                                              context, paginatedBooks[x]);
+                                        },
+                                      );
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
@@ -442,7 +638,7 @@ class BookTablePageState extends State<BookTablePage> {
                             padding: const EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
                               color: i == currentPage
-                                  ? Colors.blueGrey
+                                  ? Color.fromARGB(255, 38, 42, 79)
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(4.0),
                               border: Border.all(color: Colors.grey),
@@ -475,6 +671,168 @@ class BookTablePageState extends State<BookTablePage> {
           ),
         ],
       ),
+    );
+  }
+
+  AlertDialog livroDialog(BuildContext context, Livro livro) {
+    final _formKey = GlobalKey<FormState>();
+    final TextEditingController _tituloController =
+        TextEditingController(text: livro.titulo);
+    final TextEditingController _isbnController =
+        TextEditingController(text: livro.isbn);
+    final TextEditingController _editoraController =
+        TextEditingController(text: livro.editora);
+    final TextEditingController _anoController =
+        TextEditingController(text: livro.anoPublicacao.toString());
+    // País, autores e categorias podem ser adaptados conforme necessidade
+
+    return AlertDialog(
+      title: const Text('Editar Livro'),
+      content: SizedBox(
+        width: 500,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _tituloController,
+                  decoration: const InputDecoration(
+                    labelText: 'Título',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Campo obrigatório'
+                      : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _isbnController,
+                  decoration: const InputDecoration(
+                    labelText: 'ISBN',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Campo obrigatório'
+                      : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _editoraController,
+                  decoration: const InputDecoration(
+                    labelText: 'Editora',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Campo obrigatório'
+                      : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _anoController,
+                  decoration: const InputDecoration(
+                    labelText: 'Ano de Publicação',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Campo obrigatório'
+                      : null,
+                ),
+                // Adicione campos para país, autores e categorias se necessário
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color.fromARGB(255, 128, 128, 128),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5),
+            ),
+          ),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            if (_formKey.currentState!.validate()) {
+              // Extrair nomes dos autores e categorias
+              List<String> nomesAutores = [];
+              if (livro.autores.isNotEmpty) {
+                nomesAutores = livro.autores
+                    .map((a) {
+                      if (a is Map && a.containsKey('nome')) {
+                        return a['nome'].toString();
+                      } else if (a is String) {
+                        return a;
+                      }
+                      return '';
+                    })
+                    .where((nome) => nome.trim().isNotEmpty)
+                    .toList()
+                    .cast<String>();
+              }
+              List<String> nomesCategorias = [];
+              if (livro.categorias.isNotEmpty) {
+                nomesCategorias = livro.categorias
+                    .map((c) {
+                      if (c is Map && c.containsKey('descricao')) {
+                        return c['descricao'].toString();
+                      } else if (c is String) {
+                        return c;
+                      }
+                      return '';
+                    })
+                    .where((nome) => nome.trim().isNotEmpty)
+                    .toList()
+                    .cast<String>();
+              }
+              final livroEditado = {
+                "Id": livro.idDoLivro,
+                "Isbn": _isbnController.text,
+                "Titulo": _tituloController.text,
+                "AnoPublicacao":
+                    int.tryParse(_anoController.text) ?? livro.anoPublicacao,
+                "Editora": _editoraController.text,
+                "Pais": livro.pais is Map
+                    ? livro.pais["idDoPais"] ??
+                        livro.pais["IdDoPais"] ??
+                        livro.pais
+                    : livro.pais,
+              };
+              await Provider.of<LivroProvider>(context, listen: false)
+                  .editLivro(livroEditado, nomesAutores, nomesCategorias);
+              await Provider.of<LivroProvider>(context, listen: false)
+                  .loadLivros();
+              Navigator.of(context).pop();
+              setState(() {});
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color.fromARGB(255, 38, 42, 79),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5),
+            ),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Salvar', style: TextStyle(fontSize: 16)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

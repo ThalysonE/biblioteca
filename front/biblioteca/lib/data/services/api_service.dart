@@ -9,30 +9,30 @@ class ApiService {
   final Map<String, String> _headers = {'Content-Type': 'application/json'};
 
   String _getBaseUrl() {
-  
-      if(!dotenv.isEveryDefined(['PORTA_API'])) {
+    if (!dotenv.isEveryDefined(['PORTA_API'])) {
       FlutterError.reportError(FlutterErrorDetails(
           exception:
               Exception("Variável de ambiente 'PORTA_API' não foi definida")));
     }
-      
-      final String porta = dotenv.env['PORTA_API']!;
+
+    final String porta = dotenv.env['PORTA_API']!;
 
     return "http://localhost:$porta";
   }
 
   Future<Response> requisicao(
       String route, String method, Map<String, dynamic> body) async {
-      final String baseUrl = _getBaseUrl();
-      final String url = "$baseUrl/$route";
-    
-      return await _dio.request(
-        url,
-        options: Options(
-          method: method,
-          headers: _headers,
-        ),
-        data: jsonEncode(body),
-      );
+    final String baseUrl = _getBaseUrl();
+    final String url = "$baseUrl/$route";
+
+    return await _dio.request(
+      url,
+      options: Options(
+        validateStatus: (status) => true,
+        method: method,
+        headers: _headers,
+      ),
+      data: jsonEncode(body),
+    );
   }
 }

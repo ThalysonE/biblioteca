@@ -69,7 +69,6 @@ class LivroService {
       "NomeDasCategorias": categorias,
     };
 
-
     final response = await _api.requisicao(
       apiRoute,
       'POST',
@@ -82,8 +81,24 @@ class LivroService {
   }
 
   // Alterar Livro
-  Future<void> alterLivro(Map<String, dynamic> livro) async {
-    final Map<String, dynamic> body = livro;
+  Future<void> alterLivro(
+      num idDaSessao,
+      String loginDoUsuarioRequerente,
+      Map<String, dynamic> livro,
+      List<String> autores,
+      List<String> categorias) async {
+    final Map<String, dynamic> body = {
+      "IdDaSessao": idDaSessao,
+      "LoginDoUsuarioRequerente": loginDoUsuarioRequerente,
+      "Id": livro["Id"],
+      "Isbn": livro["Isbn"],
+      "Titulo": livro["Titulo"],
+      "AnoPublicacao": livro["AnoPublicacao"],
+      "Editora": livro["Editora"],
+      "Pais": livro["Pais"],
+      "NomeDosAutores": autores,
+      "NomeDasCategorias": categorias,
+    };
 
     final response = await _api.requisicao(
       apiRoute,

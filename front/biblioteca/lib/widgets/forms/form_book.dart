@@ -8,8 +8,6 @@ import 'package:biblioteca/data/models/paises_model.dart';
 import 'package:biblioteca/data/providers/paises_provider.dart';
 import 'package:biblioteca/data/models/categorias_model.dart';
 import 'package:biblioteca/data/providers/categoria_provider.dart';
-import 'package:biblioteca/data/models/exemplar_model.dart';
-import 'package:biblioteca/data/providers/exemplares_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:biblioteca/utils/routes.dart';
 
@@ -32,8 +30,6 @@ class _FormBookState extends State<FormBook> {
   final TextEditingController _editoraController = TextEditingController();
   final TextEditingController _anoPublicacaoController =
       TextEditingController();
-  final TextEditingController _numeroExemplaresController =
-      TextEditingController(text: "1");
   final TextEditingController _paisController = TextEditingController();
   final List<TextEditingController> _authorsControllers = [
     TextEditingController()
@@ -146,7 +142,6 @@ class _FormBookState extends State<FormBook> {
     _isbnController.clear();
     _editoraController.clear();
     _anoPublicacaoController.clear();
-    _numeroExemplaresController.text = "1";
     _paisSelecionado = null;
     _authorsControllers.clear();
     _authorsControllers.add(TextEditingController());
@@ -159,7 +154,8 @@ class _FormBookState extends State<FormBook> {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor, preencha todos os campos obrigatórios corretamente'),
+          content: Text(
+              'Por favor, preencha todos os campos obrigatórios corretamente'),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 3),
         ),
@@ -181,7 +177,19 @@ class _FormBookState extends State<FormBook> {
         newLivro.anoPublicacao = int.parse(_anoPublicacaoController.text);
         newLivro.pais = int.parse(_paisSelecionado!);
 
-        await provider.editLivro(newLivro.toJson());
+        List<String> autores =
+            _authorsControllers.map((controller) => controller.text).toList();
+        List<String> categorias = [];
+        if (_categoriaSelecionada != null &&
+            _categoriaSelecionada!.isNotEmpty) {
+          categorias.add(_categoriaSelecionada!);
+        }
+        categorias.addAll(_categoriesControllers
+            .map((controller) => controller.text)
+            .where((text) => text.isNotEmpty)
+            .toList());
+
+        await provider.editLivro(newLivro.toJson(), autores, categorias);
 
         mensagem = provider.hasErrors
             ? "Ocorreu um erro ao tentar alterar este registro, por favor confira os dados inseridos"
@@ -199,7 +207,8 @@ class _FormBookState extends State<FormBook> {
         List<String> autores =
             _authorsControllers.map((controller) => controller.text).toList();
         List<String> categorias = [];
-        if (_categoriaSelecionada != null && _categoriaSelecionada!.isNotEmpty) {
+        if (_categoriaSelecionada != null &&
+            _categoriaSelecionada!.isNotEmpty) {
           categorias.add(_categoriaSelecionada!);
         }
         categorias.addAll(_categoriesControllers
@@ -249,7 +258,6 @@ class _FormBookState extends State<FormBook> {
     _editoraController.dispose();
     _anoPublicacaoController.dispose();
     _paisController.dispose();
-    _numeroExemplaresController.dispose();
 
     for (var controller in _authorsControllers) {
       controller.dispose();
@@ -273,9 +281,9 @@ class _FormBookState extends State<FormBook> {
         setState(() {
           _tituloController.text = data['title'] ?? '';
           _editoraController.text = data['publisher'] ?? '';
-          _anoPublicacaoController.text = data['year'] != null ? '${data['year']}' : '';
+          _anoPublicacaoController.text =
+              data['year'] != null ? '${data['year']}' : '';
 
-          
           if (data['authors'] != null) {
             _authorsControllers.clear();
             for (String autor in data['authors']) {
@@ -405,7 +413,7 @@ class _FormBookState extends State<FormBook> {
                         controller: _anoPublicacaoController,
                         decoration: const InputDecoration(
                           label: CampoObrigatorio(
-                              label: "Data de Publicação (YYYY-MM-DD)"),
+                              label: "Ano de Publicação"),
                           border: OutlineInputBorder(),
                         ),
                         validator: (value) {
@@ -414,7 +422,9 @@ class _FormBookState extends State<FormBook> {
                           }
                           try {
                             var ano = int.parse(value);
-                            if (ano > DateTime.now().year || ano < 1) {
+                            if (ano > DateTime.now().year ||
+                                ano < 1 ||
+                                ano.toString().length < 4) {
                               return "Ano inválido";
                             }
                           } catch (e) {
@@ -522,7 +532,8 @@ class _FormBookState extends State<FormBook> {
                                         ? DropdownButtonFormField<String>(
                                             value: _categoriaSelecionada,
                                             decoration: const InputDecoration(
-                                              label: Text("Categoria Principal"),
+                                              label:
+                                                  Text("Categoria Principal"),
                                               border: OutlineInputBorder(),
                                             ),
                                             items: categoriasPrincipais
@@ -580,30 +591,6 @@ class _FormBookState extends State<FormBook> {
                             ],
                           );
                         }),
-                      ),
-                      const SizedBox(height: 20.0),
-
-                      // Número de Exemplares
-                      TextFormField(
-                        controller: _numeroExemplaresController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          label:
-                              CampoObrigatorio(label: "Número de Exemplares"),
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Preencha esse campo";
-                          }
-
-                          final numero = int.tryParse(value);
-                          if (numero == null || numero < 1) {
-                            return "Informe um número válido (mínimo 1)";
-                          }
-
-                          return null;
-                        },
                       ),
                       const SizedBox(height: 20.0),
 

@@ -13,56 +13,63 @@ func PegarDashboard() modelos.Dashboard {
 	conexao := PegarConexao()
 	var dash modelos.Dashboard
 
-	textoQueryEmprestimo := `select count(id_detalhe_emprestimo)
+	textoQueryEmprestimo := `select count(id_detalhe_emprestimo), to_char(Date(data_criacao), 'yyyy-mm-dd')
 	from  detalhe_emprestimo
 	where data_criacao >= $1 and
 	data_criacao <= $2 and
 	acao = 1
-	group by data_criacao
-	order by data_criacao desc;`
+	group by Date(data_criacao)
+	order by Date(data_criacao) desc;`
 
 	agora := time.Now()
 	domingo := agora.AddDate(0, 0, -int(agora.Weekday()))
-	sabado := agora.AddDate(0, 0, int(time.Saturday - agora.Weekday()))
-	domingoStr  := domingo.Local().Format(time.DateOnly)
+	sabado := agora.AddDate(0, 0, int(time.Saturday-agora.Weekday()))
+	domingoStr := domingo.Local().Format(time.DateOnly)
 	sabadoStr := sabado.Local().Format(time.DateOnly)
 
-
-
 	qtdEmprestimo := 0
-	diaSemana := int(agora.Weekday())
+	dataEmprestimoStr := "";
 	linhas, erro := conexao.Query(context.Background(), textoQueryEmprestimo, domingoStr, sabadoStr)
-	if (erro != nil) {
+	if erro != nil {
 		fmt.Println(erro)
 		return dash
 	}
 
-	pgx.ForEachRow(linhas, []any{&qtdEmprestimo}, func() error {
-		dash.QtdEmprestimoSemana[diaSemana] = qtdEmprestimo
-		diaSemana -= 1
+	_, erro = pgx.ForEachRow(linhas, []any{&qtdEmprestimo, &dataEmprestimoStr}, func() error {
+		dataEmprestimo, _ := time.Parse(time.DateOnly, dataEmprestimoStr)
+
+		dash.QtdEmprestimoSemana[dataEmprestimo.Weekday()] = qtdEmprestimo
 		return nil
 	})
 
+	if erro != nil {
+		fmt.Println(erro)
+		panic("bug")
+	}
+
 	qtdDevolucoes := 0
-	diaSemana = int(agora.Weekday())
-	textoQueryDevolucoes := `select count(id_detalhe_emprestimo)
+	textoQueryDevolucoes := `select count(id_detalhe_emprestimo), to_char(Date(data_criacao), 'yyyy-mm-dd')
 	from  detalhe_emprestimo
 	where data_criacao >= $1 and
 	data_criacao <= $2 and
 	acao = 3
-	group by data_criacao
-	order by data_criacao desc;`
+	group by Date(data_criacao)
+	order by Date(data_criacao) desc;`
 	linhas, erro = conexao.Query(context.Background(), textoQueryDevolucoes, domingoStr, sabadoStr)
-	if (erro != nil) {
+	if erro != nil {
 		fmt.Println(erro)
 		return dash
 	}
-	pgx.ForEachRow(linhas, []any{&qtdDevolucoes}, func() error {
-		dash.QtdDevolucaoSemana[diaSemana] = qtdDevolucoes
-		diaSemana -= 1
+	_, erro = pgx.ForEachRow(linhas, []any{&qtdDevolucoes, &dataEmprestimoStr}, func() error {
+		dataEmprestimo, _ := time.Parse(time.DateOnly, dataEmprestimoStr)
+		dash.QtdDevolucaoSemana[dataEmprestimo.Weekday()] = qtdDevolucoes
 		return nil
 	})
 
+	if erro != nil {
+		fmt.Println(erro)
+		return dash
+	}
 
 	qtdLivrosAtrasados := 0
 
@@ -75,11 +82,8 @@ func PegarDashboard() modelos.Dashboard {
 	conexao.QueryRow(context.Background(), textoQueryLivrosAtrasados).Scan(&qtdLivrosAtrasados)
 	dash.QtdLivrosAtrasadosSemana[agora.Weekday()] = qtdLivrosAtrasados
 
-
-
 	return dash
 }
-
 
 func PegarQtdDevolucoesAtrasadoSemana() [7]int {
 	conexao := PegarConexao()
@@ -88,11 +92,11 @@ func PegarQtdDevolucoesAtrasadoSemana() [7]int {
 
 	agora := time.Now()
 	domingo := agora.AddDate(0, 0, -int(agora.Weekday()))
-	sabado := agora.AddDate(0, 0, int(time.Saturday - agora.Weekday()))
-	domingoStr  := domingo.Local().Format(time.DateOnly)
+	sabado := agora.AddDate(0, 0, int(time.Saturday-agora.Weekday()))
+	domingoStr := domingo.Local().Format(time.DateOnly)
 	sabadoStr := sabado.Local().Format(time.DateOnly)
 
-	textoQuery := `select count(id_detalhe_emprestimo)
+	textoQuery := `select count(id_detalhe_emprestimo),  to_char(Date(de.data_criacao), 'yyyy-mm-dd')
 	from  detalhe_emprestimo de
 	join emprestimo e on e.id_emprestimo = de.emprestimo
 	where de.data_criacao >= $1 and
@@ -100,19 +104,19 @@ func PegarQtdDevolucoesAtrasadoSemana() [7]int {
 	now() > data_prevista_devolucao and
 	data_devolucao is null and
 	acao = 3
-	group by de.data_criacao
-	order by de.data_criacao desc;`
+	group by Date(de.data_criacao)
+	order by Date(de.data_criacao) desc;`
 
 	linhas, erro := conexao.Query(context.Background(), textoQuery, domingoStr, sabadoStr)
-	if (erro != nil) {
+	if erro != nil {
 		fmt.Println(erro)
 		return resultado
 	}
 	qtdDevolucoes := 0
-	diaSemana := int(agora.Weekday())
-	pgx.ForEachRow(linhas, []any{&qtdDevolucoes}, func() error {
-		resultado[diaSemana] = qtdDevolucoes
-		diaSemana -= 1
+	dataEmprestimoStr := ""
+	pgx.ForEachRow(linhas, []any{&qtdDevolucoes, &dataEmprestimoStr}, func() error {
+		dataEmprestimo, _ := time.Parse(time.DateOnly, dataEmprestimoStr)
+		resultado[dataEmprestimo.Weekday()] = qtdDevolucoes
 		return nil
 	})
 

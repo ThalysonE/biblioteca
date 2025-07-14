@@ -28,4 +28,7 @@ class AppRoutes {
   static const configuracoes = '/configuracoes';
 
   static const codigoRedefinirSenha = '/codigo';
+
+
+  static const turmas = '/turmas';
 }

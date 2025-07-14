@@ -26,8 +26,6 @@ class _FormAutorState extends State<FormAutor> {
 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nomeController = TextEditingController();
-  final TextEditingController _anoNascimentoController =
-      TextEditingController();
   final TextEditingController _nacionalidadeController =
       TextEditingController();
   final TextEditingController _sexoController = TextEditingController();
@@ -54,7 +52,6 @@ class _FormAutorState extends State<FormAutor> {
       newAutor = widget.autor!;
 
       newAutor.nome = _nomeController.text;
-      newAutor.anoNascimento = int.tryParse(_anoNascimentoController.text);
       newAutor.nacionalidadeCodigo =
           int.tryParse(_nacionalidadeController.text);
       newAutor.sexoCodigo = _sexoController.text;
@@ -68,8 +65,7 @@ class _FormAutorState extends State<FormAutor> {
       newAutor = Autor(
           nome: _nomeController.text,
           nacionalidadeCodigo: int.tryParse(_nacionalidadeController.text),
-          sexoCodigo: _sexoController.text,
-          anoNascimento: int.tryParse(_anoNascimentoController.text));
+          sexoCodigo: _sexoController.text);
 
       await provider.addAutor(newAutor);
 
@@ -97,10 +93,6 @@ class _FormAutorState extends State<FormAutor> {
     if (isModoEdicao()) {
       _nomeController.text = widget.autor!.nome;
 
-      _anoNascimentoController.text = widget.autor!.anoNascimento != null
-          ? widget.autor!.anoNascimento.toString()
-          : '';
-
       _nacionalidadeController.text = widget.autor!.nacionalidadeCodigo != null
           ? widget.autor!.nacionalidadeCodigo.toString()
           : '';
@@ -115,7 +107,6 @@ class _FormAutorState extends State<FormAutor> {
   @override
   void dispose() {
     _nomeController.dispose();
-    _anoNascimentoController.dispose();
     _nacionalidadeController.dispose();
     _sexoController.dispose();
     super.dispose();
@@ -160,24 +151,6 @@ class _FormAutorState extends State<FormAutor> {
                       ),
                       const SizedBox(height: 20.0),
 
-                      // Ano de Nascimento
-                      TextFormField(
-                        controller: _anoNascimentoController,
-                        decoration: const InputDecoration(
-                          labelText: "Ano de Nascimento",
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value != null &&
-                                  value.isNotEmpty &&
-                              int.parse(value) > DateTime.now().year) {
-                            return "Insira um ano válido";
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20.0),
 
                       // Nacionalidade
                       DropdownButtonFormField<String>(
