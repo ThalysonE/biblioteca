@@ -81,11 +81,10 @@ class HistoryTablePageState extends State<HistoryTablePage> {
           children: [
             BreadCrumb(breadcrumb: [
               "Início",
-              widget.ultimaPagina ??
-                  "Usuários", // <- Use o parâmetro ultimaPagina
+              widget.ultimaPagina ?? "Usuários",
               "Histórico"
             ], icon: Icons.co_present_rounded),
-            SingleChildScrollView(
+            const SingleChildScrollView(
               padding: EdgeInsets.symmetric(vertical: 250, horizontal: 40),
               child: Column(
                 children: [
@@ -109,6 +108,7 @@ class HistoryTablePageState extends State<HistoryTablePage> {
                   .toLowerCase()
                   .contains(_searchText) ||
               _formatDate(e.dataEmprestimo).contains(_searchText) ||
+              _formatDate(e.dataPrevistaEntrega).contains(_searchText) ||
               _formatDate(e.dataDeDevolucao).contains(_searchText) ||
               _getStatusText(e.status).toLowerCase().contains(_searchText))
           .toList();
@@ -131,6 +131,9 @@ class HistoryTablePageState extends State<HistoryTablePage> {
           break;
         case 'dataEmprestimo':
           cmp = a.dataEmprestimo.compareTo(b.dataEmprestimo);
+          break;
+        case 'previsaoDevolucao':
+          cmp = a.dataPrevistaEntrega.compareTo(b.dataPrevistaEntrega);
           break;
         case 'dataDevolucao':
           cmp = a.dataDeDevolucao.compareTo(b.dataDeDevolucao);
@@ -158,8 +161,7 @@ class HistoryTablePageState extends State<HistoryTablePage> {
         children: [
           BreadCrumb(breadcrumb: [
             "Início",
-            widget.ultimaPagina ??
-                "Usuários", // <- Use o parâmetro ultimaPagina aqui também
+            widget.ultimaPagina ?? "Usuários",
             "Histórico"
           ], icon: Icons.co_present_rounded),
           Padding(
@@ -295,6 +297,7 @@ class HistoryTablePageState extends State<HistoryTablePage> {
         2: FlexColumnWidth(0.15),
         3: FlexColumnWidth(0.15),
         4: FlexColumnWidth(0.15),
+        5: FlexColumnWidth(0.15),
       },
       children: [
         TableRow(
@@ -409,6 +412,42 @@ class HistoryTablePageState extends State<HistoryTablePage> {
                 ),
               ),
             ),
+            // Previsão de Devolução
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    if (_sortColumn == 'previsaoDevolucao') {
+                      _isAscending = !_isAscending;
+                    } else {
+                      _sortColumn = 'previsaoDevolucao';
+                      _isAscending = true;
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    const Text(
+                      'Previsão de Devolução',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          fontSize: 15),
+                    ),
+                    Icon(
+                      _sortColumn == 'previsaoDevolucao'
+                          ? (_isAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward)
+                          : Icons.unfold_more,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
+            ),
             // Data Devolução
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -498,6 +537,8 @@ class HistoryTablePageState extends State<HistoryTablePage> {
                   paginatedEmprestimos[x].exemplarMap['Livro']['Titulo']),
               _buildDateCell(
                   _formatDate(paginatedEmprestimos[x].dataEmprestimo)),
+              _buildDateCell(
+                  _formatDate(paginatedEmprestimos[x].dataPrevistaEntrega)),
               _buildDateCell(
                 (paginatedEmprestimos[x].status == 2 ||
                             paginatedEmprestimos[x].status == 3) &&
