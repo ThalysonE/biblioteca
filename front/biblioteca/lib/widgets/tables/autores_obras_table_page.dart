@@ -71,17 +71,6 @@ class _ObrasPageState extends State<ObrasPage> {
     );
   }
 
-  void _sortLivros(String column) {
-    setState(() {
-      if (_sortColumn == column) {
-        _isAscending = !_isAscending;
-      } else {
-        _sortColumn = column;
-        _isAscending = true;
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     List<Livro> filteredLivros = livrosDoAutor;
