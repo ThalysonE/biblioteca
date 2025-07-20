@@ -373,7 +373,7 @@ class _ExemplaresPageState extends State<ExemplaresPage> {
                               child: Row(
                                 children: [
                                   const Text(
-                                    'Exemplar',
+                                    'Tombamento',
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white),
