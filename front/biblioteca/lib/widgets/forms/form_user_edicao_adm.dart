@@ -23,7 +23,7 @@ class ConfigPerfil extends StatefulWidget {
 class _ConfigPerfilState extends State<ConfigPerfil> {
   final _formKey = GlobalKey<FormState>();
   final _formAcessoKey = GlobalKey<FormState>();
-  
+
   // Controllers para informações pessoais
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _cpfController = TextEditingController();
@@ -32,16 +32,17 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
   final TextEditingController _turmaController = TextEditingController();
   final TextEditingController _turnoController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-  
+
   // Controllers para dados de acesso
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _senhaAtualController = TextEditingController();
   final TextEditingController _novaSenhaController = TextEditingController();
-  final TextEditingController _confirmarSenhaController = TextEditingController();
+  final TextEditingController _confirmarSenhaController =
+      TextEditingController();
 
   final DateTime _today = DateTime.now();
   late AuthProvider authProvider;
-  
+
   // Variáveis para controle de visualização de senha
   bool _mostrarSenhaAtual = false;
   bool _mostrarNovaSenha = false;
@@ -55,7 +56,8 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
   Future<void> _loadTurmas(int turno) async {
     ApiResponse futureTurmas = await _turmasService.fetchTurmas();
     setState(() {
-      turmas = futureTurmas.body.where((turma) => turma.turno == turno).toList();
+      turmas =
+          futureTurmas.body.where((turma) => turma.turno == turno).toList();
       _turmaController.text = turmas[0].turma.toString();
       showTurmas = true;
     });
@@ -64,16 +66,19 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
   Future<void> salvarInformacoesPessoais(context) async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
+
       try {
-        final usuarioProvider = Provider.of<UsuarioProvider>(context, listen: false);
+        final usuarioProvider =
+            Provider.of<UsuarioProvider>(context, listen: false);
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
         final usuarioAtualizado = Usuario(
           idDoUsuario: widget.usuario.idDoUsuario,
           nome: _nomeController.text,
           email: _emailController.text,
-          telefone: _telefoneController.text.isEmpty ? null : _telefoneController.text,
+          telefone: _telefoneController.text.isEmpty
+              ? null
+              : _telefoneController.text,
           dataDeNascimento: _dateController.text.isEmpty
               ? null
               : DateFormat('d/M/y').parse(_dateController.text),
@@ -87,17 +92,17 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
 
         await usuarioProvider.editUsuario(usuarioAtualizado);
         authProvider.uusuario = usuarioAtualizado;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Informações pessoais atualizadas com sucesso!"),
+            content: Center(child: Text("Informações atualizadas com sucesso!")),
             backgroundColor: Colors.green,
           ),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Erro ao atualizar: ${e.toString()}"),
+            content: Center(child: Text("Erro ao atualizar: ${e.toString()}")),
             backgroundColor: Colors.red,
           ),
         );
@@ -110,14 +115,12 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
   Future<void> salvarDadosAcesso(context) async {
     if (_formAcessoKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
+
       try {
         // Verificar se a senha atual está correta (implemente no seu serviço)
         final senhaCorreta = await _verificarSenhaAtual(
-          widget.usuario.idDoUsuario, 
-          _senhaAtualController.text
-        );
-        
+            widget.usuario.idDoUsuario, _senhaAtualController.text);
+
         if (!senhaCorreta) {
           throw Exception("Senha atual incorreta");
         }
@@ -126,7 +129,8 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
           throw Exception("As novas senhas não coincidem");
         }
 
-        final usuarioProvider = Provider.of<UsuarioProvider>(context, listen: false);
+        final usuarioProvider =
+            Provider.of<UsuarioProvider>(context, listen: false);
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
         final usuarioAtualizado = Usuario(
@@ -145,25 +149,12 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
 
         await usuarioProvider.editUsuario(usuarioAtualizado);
         authProvider.uusuario = usuarioAtualizado;
-        
+
         // Limpar campos de senha
         _senhaAtualController.clear();
         _novaSenhaController.clear();
         _confirmarSenhaController.clear();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Center(child: Text("Dados de acesso atualizados com sucesso!")),
-            backgroundColor: Colors.green,
-          ),
-        );
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Center(child: Text("Erro ao atualizar: ${e.toString()}")),
-            backgroundColor: Colors.red,
-          ),
-        );
       } finally {
         setState(() => _isLoading = false);
       }
@@ -171,7 +162,7 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
   }
 
   Future<bool> _verificarSenhaAtual(int userId, String senha) async {
-    // Implemente esta função no seu UsuarioService
+    // Implementar uma função no UsuarioService - precisa de um end pint
     return true; // Temporário - substitua pela verificação real
   }
 
@@ -184,9 +175,10 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
     _cpfController.text = widget.usuario.cpf ?? '';
     _telefoneController.text = widget.usuario.telefone ?? '';
     _loginController.text = widget.usuario.login;
-    
+
     if (widget.usuario.dataDeNascimento != null) {
-      _dateController.text = DateFormat('d/M/y').format(widget.usuario.dataDeNascimento!);
+      _dateController.text =
+          DateFormat('d/M/y').format(widget.usuario.dataDeNascimento!);
     }
     if (widget.usuario.getTipoDeUsuario == TipoDeUsuario.aluno) {
       _turnoController.text = widget.usuario.turno.toString();
@@ -235,17 +227,17 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
                       children: [
                         // Seção de Informações Pessoais
                         Form(
-                            key: _formKey,
-                            child: _buildInformacoesPessoais(),
-                          
+                          key: _formKey,
+                          child: _buildInformacoesPessoais(),
                         ),
-                        const SizedBox(height: 60,),
+                        const SizedBox(
+                          height: 60,
+                        ),
                         // Seção de Dados de Acesso
-                         Form(
-                            key: _formAcessoKey,
-                            child: _buildDadosAcesso(),
-                          ),
-                        
+                        Form(
+                          key: _formAcessoKey,
+                          child: _buildDadosAcesso(),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 60.0),
@@ -425,7 +417,8 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
           ),
           obscureText: !_mostrarSenhaAtual,
           validator: (value) {
-            if (_novaSenhaController.text.isNotEmpty && (value == null || value.isEmpty)) {
+            if (_novaSenhaController.text.isNotEmpty &&
+                (value == null || value.isEmpty)) {
               return "Necessário para alterar senha";
             }
             return null;
@@ -462,23 +455,26 @@ class _ConfigPerfilState extends State<ConfigPerfil> {
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
               icon: Icon(
-                _mostrarConfirmarSenha ? Icons.visibility : Icons.visibility_off,
+                _mostrarConfirmarSenha
+                    ? Icons.visibility
+                    : Icons.visibility_off,
               ),
               onPressed: () {
-                setState(() => _mostrarConfirmarSenha = !_mostrarConfirmarSenha);
+                setState(
+                    () => _mostrarConfirmarSenha = !_mostrarConfirmarSenha);
               },
             ),
           ),
           obscureText: !_mostrarConfirmarSenha,
           validator: (value) {
-            if (_novaSenhaController.text.isNotEmpty && value != _novaSenhaController.text) {
+            if (_novaSenhaController.text.isNotEmpty &&
+                value != _novaSenhaController.text) {
               return "Senhas não coincidem";
             }
             return null;
           },
         ),
         const SizedBox(height: 20.0),
-        
       ],
     );
   }

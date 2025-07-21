@@ -52,7 +52,7 @@ class UsuarioProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> editUsuario(Usuario usuario,) async {
+  Future<void> editUsuario(Usuario usuario) async {
     late Usuario novoUsuario;
     try {
       novoUsuario =

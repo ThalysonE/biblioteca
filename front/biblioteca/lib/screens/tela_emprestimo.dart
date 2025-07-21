@@ -45,21 +45,23 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
   bool _isAscendingUsers = true;
 
   @override
-  void initState() {
-    super.initState();
-    _searchController = TextEditingController();
-    _searchControllerBooks = TextEditingController();
-    providerExemplar = Provider.of<ExemplarProvider>(context, listen: false);
-    _filteredUsers = [];
+void initState() {
+  super.initState();
+  _searchController = TextEditingController();
+  _searchControllerBooks = TextEditingController();
+  providerExemplar = Provider.of<ExemplarProvider>(context, listen: false);
+  _filteredUsers = [];
 
-    if (providerExemplar.exemplares.isEmpty) {
-      Provider.of<ExemplarProvider>(context, listen: false)
-          .loadExemplares()
-          .then((_) {
+  if (providerExemplar.exemplares.isEmpty) {
+    Provider.of<ExemplarProvider>(context, listen: false)
+        .loadExemplares()
+        .then((_) {
+      if (mounted) {
         setState(() {});
-      });
-    }
+      }
+    });
   }
+}
 
   scafoldMsg(String msg, int tipo) {
     return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -79,32 +81,40 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
   }
 
   void searchUsers() async {
-    final searchQuery = _searchController.text.toLowerCase();
-    if (showSearchBooks) {
-      selectUser = null;
-      showBooks = false;
-      showSearchBooks = false;
-      selectbook = null;
-      _searchControllerBooks.text = '';
-      setState(() {});
-    }
-    if (searchQuery.isNotEmpty) {
-      try {
-        final resposta =
-            await Provider.of<UsuarioProvider>(context, listen: false)
-                .searchUsuarios(searchQuery);
+  if (!mounted) return;
+  
+  final searchQuery = _searchController.text.toLowerCase();
+  if (showSearchBooks) {
+    selectUser = null;
+    showBooks = false;
+    showSearchBooks = false;
+    selectbook = null;
+    _searchControllerBooks.text = '';
+    if (mounted) setState(() {});
+  }
+  
+  if (searchQuery.isNotEmpty) {
+    try {
+      final resposta = await Provider.of<UsuarioProvider>(context, listen: false)
+          .searchUsuarios(searchQuery);
+          
+      if (mounted) {
         setState(() {
           search = true;
           _filteredUsers = resposta;
         });
-      } catch (e) {
-        print(e.toString());
+      }
+    } catch (e) {
+      print(e.toString());
+      if (mounted) {
         scafoldMsg(
-            'Erro ao realizar a pesquisa de usuários. Tente novamente mais tarde.',
-            1);
+          'Erro ao realizar a pesquisa de usuários. Tente novamente mais tarde.',
+          1
+        );
       }
     }
   }
+}
 
   void searchBooks() {
     showBooks = true;
@@ -485,7 +495,9 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
   void carregarEmprestimosUsuario(int idUsuario) async {
     emprestimos = await Provider.of<EmprestimoProvider>(context, listen: false)
         .fetchEmprestimoEmAndamentoUsuarios(idUsuario);
-    setState(() {});
+    if(mounted){
+      setState(() {});
+    }
   }
 
   void realizarEmprestimo(List<Exemplar> exemplaresParaEmprestar) async {

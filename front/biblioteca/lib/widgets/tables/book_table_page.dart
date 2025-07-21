@@ -25,29 +25,36 @@ class BookTablePageState extends State<BookTablePage> {
   String _sortColumn = 'titulo'; // 'titulo', 'isbn', 'editora', 'anoPublicacao'
   bool _isAscending = true;
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+ @override
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted) {
       Provider.of<LivroProvider>(context, listen: false).loadLivros().then((_) {
-        setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       });
-    });
-  }
+    }
+  });
+}
 
   @override
-  Widget build(BuildContext context) {
-    LivroProvider livroProvider =
-        Provider.of<LivroProvider>(context, listen: true);
-    if (livroProvider.isLoading) {
-      while (livroProvider.isLoading) {}
-      return const Center(child: CircularProgressIndicator());
-    } else if (livroProvider.hasErrors) {
-      return Text(livroProvider.error!);
-    } else {
-      return tableLivro(context);
-    }
+  @override
+Widget build(BuildContext context) {
+  LivroProvider livroProvider =
+      Provider.of<LivroProvider>(context, listen: true);
+      
+  if (livroProvider.isLoading) {
+    return const Center(child: CircularProgressIndicator());
   }
+  
+  if (livroProvider.hasErrors) {
+    return Center(child: Text(livroProvider.error!));
+  }
+  
+  return tableLivro(context);
+}
 
   Material tableLivro(BuildContext context) {
     List<Livro> books = Provider.of<LivroProvider>(context).livros;
