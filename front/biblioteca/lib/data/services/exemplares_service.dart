@@ -125,4 +125,21 @@ class ExemplarService {
 
     return exemplaresAtingidosFromJson(response.data).exemplares[0];
   }
+  Future<ExemplaresAtingidos> searchExemplaresIdLivro(num idDaSessao,
+      String loginDoUsuarioRequerente, int idDolivro) async {
+    final Map<String, dynamic> body = {
+      "IdDaSessao": idDaSessao,
+      "LoginDoUsuario": loginDoUsuarioRequerente,
+      "IdDoLivro": idDolivro
+    };
+    final response = await _api.requisicao(
+      apiRoute,
+      'GET',
+      body,
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.data);
+    }
+    return exemplaresAtingidosFromJson(response.data);
+  }
 }

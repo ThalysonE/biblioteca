@@ -1,10 +1,12 @@
 import 'package:biblioteca/data/models/usuario_model.dart';
 import 'package:biblioteca/data/models/usuarios_atingidos.dart';
+import 'package:biblioteca/data/providers/auth_provider.dart';
 import 'package:biblioteca/data/services/usuario_service.dart';
 import 'package:flutter/material.dart';
 
 class UsuarioProvider with ChangeNotifier {
   final usuarioService = UsuarioService();
+  final providerAuth = AuthProvider();
   final num idDaSessao;
   final String usuarioLogado;
 
@@ -55,7 +57,10 @@ class UsuarioProvider with ChangeNotifier {
     try {
       novoUsuario =
           await usuarioService.alterUsuario(idDaSessao, usuarioLogado, usuario);
-      users[users.indexOf(usuario)] = novoUsuario;
+          if(users.isNotEmpty){
+            users[users.indexOf(usuario)] = novoUsuario;
+          }
+
     } catch (e) {
       throw Exception("UsuarioProvider: Erro ao alterar o usuário - $e");
     }

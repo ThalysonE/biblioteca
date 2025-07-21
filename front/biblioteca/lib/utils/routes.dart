@@ -31,4 +31,5 @@ class AppRoutes {
 
 
   static const turmas = '/turmas';
+  static const perfil = '/perfil';
 }

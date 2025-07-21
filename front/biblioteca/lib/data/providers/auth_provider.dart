@@ -3,27 +3,30 @@ import 'package:biblioteca/data/services/usuario_service.dart';
 import 'package:flutter/material.dart';
 
 class AuthProvider with ChangeNotifier {
-  final _usuarioService = UsuarioService();
+  final uusuarioService = UsuarioService();
   num _idDaSessao = 0;
   String usuarioLogado = '';
-  late Usuario _usuario;
+  late Usuario uusuario;
 
   bool _isLoading = false;
 
   bool get isLoading => _isLoading;
   num get idDaSessao => _idDaSessao;
-  Usuario get usuario => _usuario;
-
+  Usuario get usuario => uusuario;
+  void atualizarUsuario(Usuario novoUsuario) {
+    uusuario = novoUsuario;
+    notifyListeners();
+  }
   Future login(num idDaSessao, String loginDoUsuario) async {
     print(idDaSessao);
     _idDaSessao = idDaSessao;
     usuarioLogado = loginDoUsuario;
 
     try {
-      final usuariosAtingidos = await _usuarioService.searchUsuarios(
+      final usuariosAtingidos = await uusuarioService.searchUsuarios(
           idDaSessao, usuarioLogado, "");
 
-      _usuario = usuariosAtingidos.usuarioAtingidos[0];
+      uusuario = usuariosAtingidos.usuarioAtingidos[0];
     } catch (e) {
       print("Erro ao carregar o usuario logado: $e");
     } finally {

@@ -131,8 +131,9 @@ class UsuarioService {
       'PUT',
       body,
     );
-
+    print(response.data);
     if (response.statusCode != 200) {
+      
       throw Exception(response.data);
     }
 

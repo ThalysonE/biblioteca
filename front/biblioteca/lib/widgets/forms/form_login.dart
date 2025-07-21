@@ -104,9 +104,11 @@ class _FormLoginState extends State<FormLogin> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Image.asset(
-                AppAssets.logo,
-                scale: 2.5,
+              Flexible(
+                child: Image.asset(
+                  AppAssets.logo,
+                  scale: 2.5,
+                ),
               ),
               Container(
                 width: 2,
@@ -115,9 +117,11 @@ class _FormLoginState extends State<FormLogin> {
                   color: Theme.of(context).colorScheme.secondary,
                 ),
               ),
-              Image.asset(
-                AppAssets.logoEscola,
-                scale: 2.5,
+              Flexible(
+                child: Image.asset(
+                  AppAssets.logoEscola,
+                  scale: 2.5,
+                ),
               )
             ],
           ),
