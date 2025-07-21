@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:biblioteca/widgets/navegacao/bread_crumb.dart';
 import 'package:biblioteca/widgets/tables/exemplar_table_page.dart';
 import 'package:provider/provider.dart';
+import 'package:biblioteca/data/providers/paises_provider.dart';
+import 'package:biblioteca/data/providers/categoria_provider.dart';
+import 'package:biblioteca/data/providers/autor_provider.dart';
 
 class BookTablePage extends StatefulWidget {
   const BookTablePage({super.key});
@@ -523,7 +526,15 @@ class BookTablePageState extends State<BookTablePage> {
                                   ),
                                   const SizedBox(width: 3),
                                   ElevatedButton(
-                                    onPressed: () {
+                                    onPressed: () async {
+                                      // Carregar categorias e países antes de abrir o diálogo
+                                      await Provider.of<CategoriaProvider>(
+                                              context,
+                                              listen: false)
+                                          .loadCategorias();
+                                      await Provider.of<PaisesProvider>(context,
+                                              listen: false)
+                                          .loadPaises();
                                       showDialog(
                                         context: context,
                                         builder: (context) {
@@ -638,7 +649,7 @@ class BookTablePageState extends State<BookTablePage> {
                             padding: const EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
                               color: i == currentPage
-                                  ? Color.fromARGB(255, 38, 42, 79)
+                                  ? const Color.fromARGB(255, 38, 42, 79)
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(4.0),
                               border: Border.all(color: Colors.grey),
@@ -675,14 +686,14 @@ class BookTablePageState extends State<BookTablePage> {
   }
 
   AlertDialog livroDialog(BuildContext context, Livro livro) {
-    final _formKey = GlobalKey<FormState>();
-    final TextEditingController _tituloController =
+    final formKey = GlobalKey<FormState>();
+    final TextEditingController tituloController =
         TextEditingController(text: livro.titulo);
-    final TextEditingController _isbnController =
+    final TextEditingController isbnController =
         TextEditingController(text: livro.isbn);
-    final TextEditingController _editoraController =
+    final TextEditingController editoraController =
         TextEditingController(text: livro.editora);
-    final TextEditingController _anoController =
+    final TextEditingController anoController =
         TextEditingController(text: livro.anoPublicacao.toString());
     // País, autores e categorias podem ser adaptados conforme necessidade
 
@@ -690,59 +701,195 @@ class BookTablePageState extends State<BookTablePage> {
       title: const Text('Editar Livro'),
       content: SizedBox(
         width: 500,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _tituloController,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                    border: OutlineInputBorder(),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: tituloController,
+                    decoration: const InputDecoration(
+                      labelText: 'Título',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Campo obrigatório'
+                        : null,
                   ),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Campo obrigatório'
-                      : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _isbnController,
-                  decoration: const InputDecoration(
-                    labelText: 'ISBN',
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: isbnController,
+                    decoration: const InputDecoration(
+                      labelText: 'ISBN',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Campo obrigatório'
+                        : null,
                   ),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Campo obrigatório'
-                      : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _editoraController,
-                  decoration: const InputDecoration(
-                    labelText: 'Editora',
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: editoraController,
+                    decoration: const InputDecoration(
+                      labelText: 'Editora',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Campo obrigatório'
+                        : null,
                   ),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Campo obrigatório'
-                      : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _anoController,
-                  decoration: const InputDecoration(
-                    labelText: 'Ano de Publicação',
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: anoController,
+                    decoration: const InputDecoration(
+                      labelText: 'Ano de Publicação',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Campo obrigatório'
+                        : null,
                   ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Campo obrigatório'
-                      : null,
-                ),
-                // Adicione campos para país, autores e categorias se necessário
-              ],
+                  const SizedBox(height: 10),
+                  // Dropdown de País
+                  Consumer<PaisesProvider>(
+                    builder: (context, paisesProvider, child) {
+                      if (paisesProvider.isLoading) {
+                        return const CircularProgressIndicator();
+                      }
+                      if (paisesProvider.hasErrors) {
+                        return Text(
+                            'Erro ao carregar países: \n${paisesProvider.error}');
+                      }
+                      return DropdownButtonFormField<int>(
+                        value: livro.pais['IdDoPais'],
+                        decoration: const InputDecoration(
+                          labelText: 'País',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: paisesProvider.paises.map((pais) {
+                          return DropdownMenuItem<int>(
+                            value: pais.idDoPais,
+                            child: Text(pais.nome),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            livro.pais['IdDoPais'] = value;
+                          });
+                        },
+                        validator: (value) =>
+                            value == null ? 'Campo obrigatório' : null,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  // Dropdown de Categorias (multi-seleção)
+                  Consumer<CategoriaProvider>(
+                    builder: (context, categoriaProvider, child) {
+                      if (categoriaProvider.isloading) {
+                        return const CircularProgressIndicator();
+                      }
+                      if (categoriaProvider.hasErrors) {
+                        return Text(
+                            'Erro ao carregar categorias: \n${categoriaProvider.error}');
+                      }
+                      // Dropdown de seleção única para categoria
+                      return DropdownButtonFormField<String>(
+                        value: livro.categorias.isNotEmpty
+                            ? (livro.categorias.first['descricao'] ??
+                                livro.categorias.first['Descricao'] ??
+                                livro.categorias.first.toString())
+                            : null,
+                        decoration: const InputDecoration(
+                          labelText: 'Categoria',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: categoriaProvider.categorias
+                            .map((categoria) => DropdownMenuItem<String>(
+                                  value: categoria.descricao,
+                                  child: Text(categoria.descricao),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            livro.categorias.clear();
+                            if (value != null) {
+                              livro.categorias.add({'descricao': value});
+                            }
+                          });
+                        },
+                        validator: (value) =>
+                            value == null ? 'Campo obrigatório' : null,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  // Campos de Autores
+                  Consumer<AutorProvider>(
+                    builder: (context, autorProvider, child) {
+                      if (autorProvider.isloading) {
+                        return const CircularProgressIndicator();
+                      }
+                      if (autorProvider.hasErrors) {
+                        return Text(
+                            'Erro ao carregar autores: \n${autorProvider.error}');
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Autores',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          ...livro.autores.map<Widget>((autor) {
+                            return Row(
+                              children: [
+                                Expanded(
+                                    child: Text(autor['nome'] ??
+                                        autor['Nome'] ??
+                                        autor.toString())),
+                                IconButton(
+                                  icon: const Icon(Icons.remove_circle,
+                                      color: Colors.red),
+                                  onPressed: () {
+                                    setState(() {
+                                      livro.autores.remove(autor);
+                                    });
+                                  },
+                                ),
+                              ],
+                            );
+                          }),
+                          // Dropdown para adicionar novo autor
+                          DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(
+                              labelText: 'Adicionar autor',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: autorProvider.autores
+                                .where((a) => !livro.autores.any((la) =>
+                                    (la['nome'] ?? la['Nome'] ?? la) == a.nome))
+                                .map((autor) => DropdownMenuItem<String>(
+                                      value: autor.nome,
+                                      child: Text(autor.nome),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  livro.autores.add({'nome': value});
+                                });
+                              }
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -764,7 +911,7 @@ class BookTablePageState extends State<BookTablePage> {
         ),
         ElevatedButton(
           onPressed: () async {
-            if (_formKey.currentState!.validate()) {
+            if (formKey.currentState!.validate()) {
               // Extrair nomes dos autores e categorias
               List<String> nomesAutores = [];
               if (livro.autores.isNotEmpty) {
@@ -798,16 +945,12 @@ class BookTablePageState extends State<BookTablePage> {
               }
               final livroEditado = {
                 "Id": livro.idDoLivro,
-                "Isbn": _isbnController.text,
-                "Titulo": _tituloController.text,
+                "Isbn": isbnController.text,
+                "Titulo": tituloController.text,
                 "AnoPublicacao":
-                    int.tryParse(_anoController.text) ?? livro.anoPublicacao,
-                "Editora": _editoraController.text,
-                "Pais": livro.pais is Map
-                    ? livro.pais["idDoPais"] ??
-                        livro.pais["IdDoPais"] ??
-                        livro.pais
-                    : livro.pais,
+                    int.tryParse(anoController.text) ?? livro.anoPublicacao,
+                "Editora": editoraController.text,
+                "Pais": livro.pais["IdDoPais"],
               };
               await Provider.of<LivroProvider>(context, listen: false)
                   .editLivro(livroEditado, nomesAutores, nomesCategorias);
