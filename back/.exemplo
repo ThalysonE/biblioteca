@@ -1,6 +1,0 @@
-#Exemplo do arquivo .env
-DB_URL=postgres://<usuario>:<senha>@localhost:5432/<banco>?options=-c%20search_path%3D<nome schema>
-PORTA_API=9090
-EMAIL=email@email.com
-SENHA_EMAIL=senha123
-DIAS_EMPRESTIMO=7

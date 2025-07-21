@@ -3,6 +3,7 @@ import 'package:biblioteca/data/providers/emprestimo_provider.dart';
 import 'package:biblioteca/data/providers/exemplares_provider.dart';
 import 'package:biblioteca/widgets/navegacao/bread_crumb.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class TelaDevolucao extends StatefulWidget {
@@ -200,10 +201,13 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
   Future<void> DevolverExemplares(
       List<EmprestimosModel> emprestimosRenov) async {
     final copia = List.from(emprestimosRenov);
-    for (EmprestimosModel item in copia) {
-      print('Item: ${item.IdDoEmprestimo}');
-      await Provider.of<EmprestimoProvider>(context, listen: false)
-          .devolver(item.IdDoEmprestimo);
+    try{
+      for(EmprestimosModel item in copia){
+      await Provider.of<EmprestimoProvider>(context, listen: false).devolver(item.IdDoEmprestimo);
+      }
+    }catch(e){
+      print(e.toString());
+      msgSnackBar('Houve um erro na devolução dos livros', 1);
     }
   }
 
@@ -214,7 +218,7 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
     return Material(
       child: Column(
         children: [
-          BreadCrumb(
+          const BreadCrumb(
               breadcrumb: ['Início', 'Devolução'],
               icon: Icons.my_library_books_rounded),
           Padding(
@@ -235,6 +239,10 @@ class _TelaDevolucaoState extends State<TelaDevolucao> {
                         constraints: const BoxConstraints(
                             maxWidth: 800, maxHeight: 40, minWidth: 200),
                         child: TextField(
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          keyboardType: TextInputType.number,
                           controller: _searchControllerBooks,
                           decoration: InputDecoration(
                             prefixIcon: const Icon(Icons.search),

@@ -25,7 +25,6 @@ class EmprestimoService {
     if (response.statusCode != 200) {
       throw Exception(response.data);
     }
-    print('Status: ${response.statusCode}');
     List<EmprestimosModel> emprestimos = [];
     final respostaFinal = jsonDecode(response.data);
     respostaFinal.map((item) {

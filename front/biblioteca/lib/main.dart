@@ -22,6 +22,7 @@ import 'package:biblioteca/screens/telas_testes.dart';
 import 'package:biblioteca/utils/routes.dart';
 import 'package:biblioteca/utils/theme.dart';
 import 'package:biblioteca/widgets/forms/form_user.dart';
+import 'package:biblioteca/widgets/forms/form_user_edicao_adm.dart';
 import 'package:biblioteca/widgets/tables/author_table_page.dart';
 import 'package:biblioteca/widgets/tables/book_table_page.dart';
 import 'package:biblioteca/widgets/tables/history_table.dart';
@@ -60,7 +61,7 @@ void main() async {
     print("O arquivo .env não existe ou está vazio");
   }
   Provider.debugCheckInvalidValueType = null;
-  runApp(const Myapp());
+  runApp( Myapp());
 
   if (processoApi != null) {
     processoApi.kill();
@@ -76,8 +77,7 @@ void main() async {
 }
 
 class Myapp extends StatelessWidget {
-  const Myapp({super.key});
-
+   Myapp({super.key});
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -150,7 +150,7 @@ class Myapp extends StatelessWidget {
         //home: const TelaPaginaIncial(),
         routes: {
           AppRoutes.login: (ctx) => const TelaLogin(),
-          AppRoutes.logout: (ctx) => const Myapp(),
+          AppRoutes.logout: (ctx) =>  Myapp(),
           AppRoutes.home: (ctx) => const TelaPaginaIncial(),
           AppRoutes.dashboard: (ctx) => const LibraryDashboard(),
           AppRoutes.usuarios: (ctx) => const UserTablePage(),
@@ -167,6 +167,7 @@ class Myapp extends StatelessWidget {
           AppRoutes.relatorios: (context) => const Relatorios(),
           AppRoutes.nadaConsta: (context) => const NadaConsta(),
           AppRoutes.configuracoes: (context) => const Configuracoes(),
+          
         },
       ),
     );

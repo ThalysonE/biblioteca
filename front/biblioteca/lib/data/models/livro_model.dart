@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:biblioteca/data/models/exemplar_model.dart';
+
 Livro livroFromJson(String str) => Livro.fromJson(json.decode(str));
 String livroToJson(Livro data) => json.encode(data.toJson());
 
@@ -55,6 +57,7 @@ class Livro {
   Map<String, dynamic> pais;
   List<dynamic> categorias;
   List<dynamic> autores;
+  List<Exemplar> listaExemplares = []; // serve pra  guardar os exemplares do livro (usado na pesquisa de livros)
 
   Livro({
     required this.idDoLivro,
