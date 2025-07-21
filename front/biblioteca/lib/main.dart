@@ -27,7 +27,6 @@ import 'package:biblioteca/widgets/tables/author_table_page.dart';
 import 'package:biblioteca/widgets/tables/book_table_page.dart';
 import 'package:biblioteca/widgets/tables/history_table.dart';
 import 'package:biblioteca/widgets/tables/user_table_page.dart';
-import 'package:biblioteca/widgets/testarRotas.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -79,7 +78,6 @@ void main() async {
 
 class Myapp extends StatelessWidget {
    Myapp({super.key});
-  final MyRouteObserver observer = MyRouteObserver();
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -130,7 +128,6 @@ class Myapp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        navigatorObservers: [observer],
         localizationsDelegates: const [
           GlobalCupertinoLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
