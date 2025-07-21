@@ -7,7 +7,6 @@ import 'package:biblioteca/data/providers/usuario_provider.dart';
 import 'package:biblioteca/widgets/tables/history_table.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca/widgets/navegacao/bread_crumb.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -603,8 +602,8 @@ class _PaginaEmprestimoState extends State<PaginaEmprestimo> {
   @override
   Widget build(BuildContext context) {
     exemplares = providerExemplar.exemplares;
-    return SingleChildScrollView(
-      child: Material(
+    return Material(
+      child: SingleChildScrollView(
         child: Column(
           children: [
             const BreadCrumb(
