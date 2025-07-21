@@ -47,6 +47,7 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
   @override
   void initState() {
     super.initState();
+    providerExemplar = Provider.of<ExemplarProvider>(context, listen: false);
     _searchController = TextEditingController();
     filteredExemplares = [];
     if (providerExemplar.exemplares.isEmpty) {
@@ -91,6 +92,8 @@ class _PesquisarLivroState extends State<PesquisarLivro> {
                 .searchLivros(searchQuery);
         setState(() {
           search = true;
+          print(resposta);
+          filteredBooks = resposta;
         });
       } catch (e) {
         print(e.toString());

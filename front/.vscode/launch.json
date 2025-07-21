@@ -6,20 +6,20 @@
     "configurations": [
         {
             "name": "biblioteca",
-            "cwd": "front\\biblioteca",
+            "cwd": "biblioteca",
             "request": "launch",
             "type": "dart"
         },
         {
             "name": "biblioteca (profile mode)",
-            "cwd": "front\\biblioteca",
+            "cwd": "biblioteca",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
             "name": "biblioteca (release mode)",
-            "cwd": "front\\biblioteca",
+            "cwd": "biblioteca",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

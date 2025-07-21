@@ -19,7 +19,11 @@ class ExemplarProvider with ChangeNotifier {
     print(listaEmprestados);
     notifyListeners();
   }
-
+  int qtdExemplaresLivro(num idDoLivro) {
+    int qtd =
+        exemplares.where((exemplar) => exemplar.idLivro == idDoLivro).length;
+    return qtd;
+  }
   // Carrega a lista de exemplares
   Future<void> loadExemplares() async {
     try {

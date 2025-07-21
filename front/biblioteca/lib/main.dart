@@ -22,6 +22,7 @@ import 'package:biblioteca/screens/telas_testes.dart';
 import 'package:biblioteca/utils/routes.dart';
 import 'package:biblioteca/utils/theme.dart';
 import 'package:biblioteca/widgets/forms/form_user.dart';
+import 'package:biblioteca/widgets/forms/form_user_edicao_adm.dart';
 import 'package:biblioteca/widgets/tables/author_table_page.dart';
 import 'package:biblioteca/widgets/tables/book_table_page.dart';
 import 'package:biblioteca/widgets/tables/history_table.dart';
@@ -169,6 +170,7 @@ class Myapp extends StatelessWidget {
           AppRoutes.relatorios: (context) => const Relatorios(),
           AppRoutes.nadaConsta: (context) => const NadaConsta(),
           AppRoutes.configuracoes: (context) => const Configuracoes(),
+          
         },
       ),
     );
